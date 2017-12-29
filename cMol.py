@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 
-
-from fractions import Fraction
-from libcif import parsecif, readcif
-import openbabel as ob
 import os
-import pybel
 import sys
-import types
+from fractions import Fraction
+
+import openbabel as ob
+import pybel
+
+from libcif import parsecif, readcif
 
 
 def get_symops(cifname):
@@ -21,6 +21,7 @@ def get_symops(cifname):
                     symops.append(SymOp(s[t]))
             continue
     return symops
+
 
 def read_cmol(basename):
     if not os.path.isfile(basename + '.cif'):
@@ -40,80 +41,83 @@ def read_cmol(basename):
     mol = next(pybel.readfile('cif', basename + '.cif'))
     return cMol(mol.OBMol, mol.unitcell, symops, separate_args=separate_args)
 
+
 def printvec(v):
     return str((v.GetX(), v.GetY(), v.GetZ()))
 
+
 class SymOp:
-    def __init__(self,r=ob.transform3d(1),t=ob.vector3(0,0,0)):
-        self.T=ob.vector3(0,0,0)
+    def __init__(self, r=ob.transform3d(1), t=ob.vector3(0, 0, 0)):
+        self.T = ob.vector3(0, 0, 0)
         if type(r) is bytes:
             self.set_from_str(r)
         else:
-            self.R=r
+            self.R = r
         self.add_trans(t)
 
-    def __eq__(self,other):
-        assert type(other)==type(self), '%s is not %s !' %(type(other),type(self))
+    def __eq__(self, other):
+        assert type(other) == type(self), '%s is not %s !' % (type(other), type(self))
         return self.R.DescibeAsString() == other.R.DescibeAsString() and \
-               self.T.IsApprox(other.T,0.01)
-            
+               self.T.IsApprox(other.T, 0.01)
+
     def __repr__(self):
-        #describe as 4x4 matrix
-        v=[float(i) for i in self.R.DescribeAsValues().split()]
-        #construct representation of symmetry operation without translations
-        s=ob.transform3d(ob.vector3(v[0],v[1],v[2]),ob.vector3(v[4],v[5],v[6]), 
-               ob.vector3(v[8],v[9],v[10]),ob.vector3(0)).DescribeAsString().split(',')
-        #add translational part from 4x4 matrix to true translation from
-        #symmetry operation
-        t=[v[3]+self.T.GetX(),v[7]+self.T.GetY(),v[11]+self.T.GetZ()]
-        #construct scring
+        # describe as 4x4 matrix
+        v = [float(i) for i in self.R.DescribeAsValues().split()]
+        # construct representation of symmetry operation without translations
+        s = ob.transform3d(ob.vector3(v[0], v[1], v[2]), ob.vector3(v[4], v[5], v[6]),
+                           ob.vector3(v[8], v[9], v[10]), ob.vector3(0)).DescribeAsString().split(',')
+        # add translational part from 4x4 matrix to true translation from
+        # symmetry operation
+        t = [v[3] + self.T.GetX(), v[7] + self.T.GetY(), v[11] + self.T.GetZ()]
+        # construct scring
         for i in range(3):
-            t[i]=str(Fraction.from_float(t[i]).limit_denominator(6))
-            t[i]+='+'+s[i]
-            t[i]=t[i].replace('+-','-')
+            t[i] = str(Fraction.from_float(t[i]).limit_denominator(6))
+            t[i] += '+' + s[i]
+            t[i] = t[i].replace('+-', '-')
             if t[i].startswith('0'):
-                t[i]=t[i][1:]
+                t[i] = t[i][1:]
             if t[i].startswith('+'):
-                t[i]=t[i][1:]
+                t[i] = t[i][1:]
         return ','.join(t)
-        
-    def set_from_str(self,s):
-        assert type(s) is bytes, 's is not string: %s' %s
-        assert 'x' in s and 'y' in s and 'z' in s, 's sould containt x,y,z: %s' %s
-        (x,y,z)=(0,0,0)
-        s0=eval(s)
-        vt2=[int(i) for i in s0]
-        vt1=[s0[i]-vt2[i] for i in range(3)]
-        r=list()
-        for (x,y,z) in ((1,0,0),(0,1,0),(0,0,1)):
-            s1=eval(s)
-            r.append([s1[i]-s0[i] for i in range(3)])
-        self.R=ob.transform3d(ob.vector3(r[0][0],r[1][0],r[2][0]),
-                              ob.vector3(r[0][1],r[1][1],r[2][1]),
-                              ob.vector3(r[0][2],r[1][2],r[2][2]),
-                              ob.vector3(vt1[0],vt1[1],vt1[2]))
-        r1=[float(i) for i in self.R.DescribeAsValues().split()]
-        self.T=ob.vector3(s0[0]-r1[3],s0[1]-r1[7],s0[2]-r1[11])
-        #print map(list,zip(*r)),vt1,vt2,s, str(self)
-        #assert str(self) == s.replace(' ','',99)
+
+    def set_from_str(self, s):
+        assert type(s) is bytes, 's is not string: %s' % s
+        assert 'x' in s and 'y' in s and 'z' in s, 's sould containt x,y,z: %s' % s
+        (x, y, z) = (0, 0, 0)
+        s0 = eval(s)
+        vt2 = [int(i) for i in s0]
+        vt1 = [s0[i] - vt2[i] for i in range(3)]
+        r = list()
+        for (x, y, z) in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
+            s1 = eval(s)
+            r.append([s1[i] - s0[i] for i in range(3)])
+        self.R = ob.transform3d(ob.vector3(r[0][0], r[1][0], r[2][0]),
+                                ob.vector3(r[0][1], r[1][1], r[2][1]),
+                                ob.vector3(r[0][2], r[1][2], r[2][2]),
+                                ob.vector3(vt1[0], vt1[1], vt1[2]))
+        r1 = [float(i) for i in self.R.DescribeAsValues().split()]
+        self.T = ob.vector3(s0[0] - r1[3], s0[1] - r1[7], s0[2] - r1[11])
+        # print map(list,zip(*r)),vt1,vt2,s, str(self)
+        # assert str(self) == s.replace(' ','',99)
 
     def is_identity(self):
-        v0=ob.vector3(.1,.2,.3)
-        v=self.apply(v0)
-        if v.IsApprox(v0,0.01):
+        v0 = ob.vector3(.1, .2, .3)
+        v = self.apply(v0)
+        if v.IsApprox(v0, 0.01):
             return True
         return False
-        
-    def add_trans(self,t):
-        self.T+=t
-    
-    def set_trans(self,t):
-        self.T=t
-        
-    def apply(self,v):
-        res=self.R*v
-        res+=self.T
+
+    def add_trans(self, t):
+        self.T += t
+
+    def set_trans(self, t):
+        self.T = t
+
+    def apply(self, v):
+        res = self.R * v
+        res += self.T
         return res
+
 
 class cMol(object):
     def __init__(self, OBMol, unitcell, symops=list(), separate_args=(1,)):
@@ -125,7 +129,7 @@ class cMol(object):
 
         self.norm_h()
         self.separate(separate_args)
-        #self.move_to_center()
+        # self.move_to_center()
 
         self.vc = [a.GetVector() for a in self.atoms]
         self.vf = [self.c2f(v) for v in self.vc]
@@ -158,20 +162,21 @@ class cMol(object):
         return self.c2f(self.center_c)
 
     def move_to_center(self):
-       c = self.center_f
-       vc = list()
-       for i in (c.GetX(), c.GetY(), c.GetZ()):
-           if i < 0: i -= 1
-           vc.append(int(i))
-       t = ob.vector3(vc[0], vc[1], vc[2])
-       if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
-            print(("WARNING: moving by [ %4.1f %4.1f %4.1f ]" %(vc[0], vc[1], vc[2])))
-            tc=self.f2c(t)
+        c = self.center_f
+        vc = list()
+        for i in (c.GetX(), c.GetY(), c.GetZ()):
+            if i < 0: i -= 1
+            vc.append(int(i))
+        t = ob.vector3(vc[0], vc[1], vc[2])
+        if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
+            print(("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2])))
+            tc = self.f2c(t)
             for i in range(self.OBMol.NumAtoms()):
-                atom=self.OBMol.GetAtom(i+1)
-                v = ob.vector3(atom.GetX(), atom.GetY(), atom.GetZ()) #wtf! GetVector fails with segfault
+                atom = self.OBMol.GetAtom(i + 1)
+                v = ob.vector3(atom.GetX(), atom.GetY(), atom.GetZ())  # wtf! GetVector fails with segfault
                 v -= tc
                 atom.SetVector(v)
+
     @property
     def atoms(self):
         return [self.OBMol.GetAtom(i + 1) for i in range(self.OBMol.NumAtoms())]
@@ -183,7 +188,6 @@ class cMol(object):
             anums = (atoms[0].GetAtomicNum(), atoms[1].GetAtomicNum())
             if anums[0] == 1: bond.SetLength(atoms[1], _bond_data[anums[1]])
             if anums[1] == 1: bond.SetLength(atoms[0], _bond_data[anums[0]])
-
 
     def set_mon_map(self, mons=[]):
         self.mol_map = [list() for i in mons]
@@ -197,13 +201,18 @@ class cMol(object):
                         continue
 
     def separate(self, args):
-        try:        mode = args[0]
-        except:     mode = 1
-        try:        symops = args[1]
-        except:     symops = list()
-        try:        molmap = args[2]
-        except:     molmap = list()
-
+        try:
+            mode = args[0]
+        except:
+            mode = 1
+        try:
+            symops = args[1]
+        except:
+            symops = list()
+        try:
+            molmap = args[2]
+        except:
+            molmap = list()
 
         if mode == 0:
             # no separation
@@ -219,7 +228,7 @@ class cMol(object):
                         continue
                     atom = ob.OBAtom()
                     atom.SetVector(self.f2c(s.apply(self.c2f(a.GetVector()))))
-                    if a.GetVector().IsApprox(atom.GetVector(),0.01):
+                    if a.GetVector().IsApprox(atom.GetVector(), 0.01):
                         continue
                     atom.SetAtomicNum(a.GetAtomicNum())
                     self.OBMol.AddAtom(atom)
@@ -237,7 +246,6 @@ class cMol(object):
                 self.set_mon_map(res)
             else:
                 self.set_mon_map(monsx)
-
 
     def iter_eqiv(self, v):
         for symop in self.symops:
@@ -273,4 +281,3 @@ class cMol(object):
                             slist.append(s1)
                             yield s, molid1
                             break
-

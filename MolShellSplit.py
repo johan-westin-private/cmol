@@ -1,51 +1,52 @@
 #!/usr/bin/env python
 
-from cMol import *
-import os
 import sys
 
+from cMol import *
 
-def main(options,args):
-    basename=args[0]
 
-    cmol=read_cmol(basename)
-    if not cmol: sys.exit()
+def main(options, args):
+    basename = args[0]
 
-    convs=ob.OBConversion()
+    cmol = read_cmol(basename)
+    if not cmol:
+        sys.exit()
+
+    convs = ob.OBConversion()
     convs.SetOutFormat('xyz')
-    convm=ob.OBConversion()
+    convm = ob.OBConversion()
     convm.SetOutFormat('xyz')
-    conv=ob.OBConversion()
+    conv = ob.OBConversion()
     conv.SetOutFormat('xyz')
 
-
-    with open(basename+'.symm','w') as symm:
-        id=0
+    with open(basename + '.symm', 'w') as symm:
+        id = 0
         for id0 in range(len(cmol.mol_map)):
-            m0=ob.OBMol()
+            m0 = ob.OBMol()
             for i in cmol.mol_map[id0]:
                 m0.AddAtom(cmol.atoms[i])
-            ms=list()
-            convm.WriteFile(m0,'%s-m%02i.xyz' %(basename,id0))
+            ms = list()
+            convm.WriteFile(m0, '%s-m%02i.xyz' % (basename, id0))
             convm.CloseOutFile()
-            for s,id1 in cmol.iter_close(id0):
-                symm.write('%s %s %s\n' %(s,id0,id1 ))
-                id+=1
-                m1=ob.OBMol()
-                atoms1=[cmol.atoms[i] for i in cmol.mol_map[id1]]
+            for s, id1 in cmol.iter_close(id0):
+                symm.write('%s %s %s\n' % (s, id0, id1))
+                id += 1
+                m1 = ob.OBMol()
+                atoms1 = [cmol.atoms[i] for i in cmol.mol_map[id1]]
                 for a in atoms1:
-                    na=ob.OBAtom()
+                    na = ob.OBAtom()
                     na.SetVector(cmol.f2c(s.apply(cmol.c2f(a.GetVector()))))
                     na.SetAtomicNum(a.GetAtomicNum())
                     m1.AddAtom(na)
-                conv.WriteFile(m0, '%s-d%03i.xyz' %(basename,id))
+                conv.WriteFile(m0, '%s-d%03i.xyz' % (basename, id))
                 conv.Write(m1)
                 conv.CloseOutFile()
                 ms.append(m1)
-            convs.WriteFile(m0,'%s-s%02i.xyz' %(basename,id0))
+            convs.WriteFile(m0, '%s-s%02i.xyz' % (basename, id0))
             for m in ms:
                 convs.Write(m)
             convs.CloseOutFile()
+
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -56,7 +57,8 @@ if __name__ == '__main__':
     parser = OptionParser(usage=usage, description=description)
 
     # parser.add_option
-    parser.add_option('-w', '--wdvinc', dest='wdvinc', help='Find molecules with close contact of WdV radii sum + vdwinc', type='float')
+    parser.add_option('-w', '--wdvinc', dest='wdvinc',
+                      help='Find molecules with close contact of WdV radii sum + vdwinc', type='float')
 
     (options, args) = parser.parse_args()
 
@@ -66,8 +68,3 @@ if __name__ == '__main__':
 
     # go..
     main(options, args)
-
-
-
-
-

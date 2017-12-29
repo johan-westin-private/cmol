@@ -23,7 +23,7 @@ if __name__ == '__main__':
     from optparse import OptionParser
 
     usage = "%prog [-h|--help] [-b|--bsse]  <name>"
-    description = '''Script to get interaction energies rom ORCA output files. Reads <name>.symm and outpus files, writes <name>.ene'''
+    description = '''Script to get interaction energies rom ORCA output files. Reads <name>.symm and output files, writes <name>.ene'''
 
     parser = OptionParser(usage=usage, description=description)
 

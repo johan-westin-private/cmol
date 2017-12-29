@@ -50,6 +50,7 @@ if __name__ == '__main__':
     # ..go
     m_xyz_d = glob('%s-d???.xyz' % name)
     assert m_xyz_d, "Could not find files matching mask %s-d???.xyz" % name
+    m_xyz_m = []
     if not m_options.bsse:
         m_xyz_m = glob('%s-m??.xyz' % name)
         assert m_xyz_m, "Could not find files matching mask %s-m??.xyz" % name

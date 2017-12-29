@@ -248,7 +248,6 @@ def readcif(filename):
     @rtype: string"""
     if not os.path.isfile(filename):
         raise Exception("I cannot find the file %s" % filename)
-        sys.exit(1)
     f = open(filename, "r").readlines()
     text = ""
     for ligne in f:
@@ -2131,7 +2130,6 @@ if __name__ == '__main__':
             out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
-            sys.exit(1)
         m_cif = LoadCIF(in_cif_file_path)
         m_warning, m_cif_2 = CheckSym(m_cif, True)
         if len(m_warning) == 0:
@@ -2203,7 +2201,6 @@ if __name__ == '__main__':
             out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
-            sys.exit(1)
         m_cif = LoadCIF(in_cif_file_path)
 
         m_warning, m_cif_2 = CheckSym(m_cif, True)
@@ -2237,7 +2234,6 @@ if __name__ == '__main__':
             out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
-            sys.exit(1)
         #        print "Doing a trivial rewrite with symmetry check on file : %s to %s"%(filename,outfile)
         #        cif=LoadCIF(filename)
         m_cif = LoadCIF(in_cif_file_path)

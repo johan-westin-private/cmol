@@ -209,15 +209,15 @@ EOL = ["\r", "\n", "\r\n", "\n\r"]
 Blank = [" ", "    "] + EOL
 StartComment = ["\"", "\'"]
 
-for i in EOL:
-    StartComment.append((i + ";"))
+for m_i in EOL:
+    StartComment.append((m_i + ";"))
 
 EndComment = []
-for i in EOL:
-    EndComment.append(i + ";")
-for i in ["\"", "\'"]:
-    for j in Blank:
-        EndComment.append(i + j)
+for m_i in EOL:
+    EndComment.append(m_i + ";")
+for m_i in ["\"", "\'"]:
+    for m_j in Blank:
+        EndComment.append(m_i + m_j)
 
 
 def LoadCIF(filename):
@@ -2129,128 +2129,128 @@ def MergeSg(name, kcd, sg):
 if __name__ == '__main__':
     if sys.argv[0].lower().split("/")[-1] == "cif2csd":
         if len(sys.argv) == 2:
-            filename = sys.argv[1]
-            outfile = filename[:-4] + "-process.cif"
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = in_cif_file_path[:-4] + "-process.cif"
         elif len(sys.argv) == 3:
-            filename = sys.argv[1]
-            outfile = sys.argv[2]
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
             sys.exit(1)
-        cif = LoadCIF(filename)
-        w, cif2 = CheckSym(cif, True)
-        if len(w) == 0:
-            w = "OK"
-        print("Checking for symmetry : \n%s" % w)
+        m_cif = LoadCIF(in_cif_file_path)
+        m_warning, m_cif_2 = CheckSym(m_cif, True)
+        if len(m_warning) == 0:
+            m_warning = "OK"
+        print("Checking for symmetry : \n%s" % m_warning)
         print("Checking for the data needed to enter them to the Database")
 
-        cif, mod = CheckForCSD(cif2, name=filename)
-        if not mod: print("OK")
-        if mod or len(w) > 0:
-            outfile = eval(input("Please enter the name of the file where to save the CIF data -->"))
-            if len(outfile) > 0:
-                if outfile[-4:].lower() != ".cif": outfile += ".cif"
-                SaveCIF(cif, outfile)
+        m_cif, m_mod = CheckForCSD(m_cif_2, name=in_cif_file_path)
+        if not m_mod: print("OK")
+        if m_mod or len(m_warning) > 0:
+            out_cif_file_path = eval(input("Please enter the name of the file where to save the CIF data -->"))
+            if len(out_cif_file_path) > 0:
+                if out_cif_file_path[-4:].lower() != ".cif": out_cif_file_path += ".cif"
+                SaveCIF(m_cif, out_cif_file_path)
     elif sys.argv[0].lower().split("/")[-1] == "checkall2csd":
-        infiles = []
-        table = {}
-        for i in os.listdir("."):
-            if i[-4:].lower() == ".cif": infiles.append(i)
-        infiles.sort()
+        in_cif_file_paths = []
+        m_table = {}
+        for m_i in os.listdir("."):
+            if m_i[-4:].lower() == ".cif": in_cif_file_paths.append(m_i)
+        in_cif_file_paths.sort()
         if os.path.isfile("ConversionTable"):
             print("Loading the Conversion Table")
-            f = open("ConversionTable", "r")
-            ct = f.readlines()
-            f.close()
-            for i in ct:
-                j = i.split(None, 1)
-                table[j[0].strip()] = j[1].strip()
-        print("Processing all the files : ", infiles)
+            m_f = open("ConversionTable", "r")
+            ct = m_f.readlines()
+            m_f.close()
+            for m_i in ct:
+                m_j = m_i.split(None, 1)
+                m_table[m_j[0].strip()] = m_j[1].strip()
+        print("Processing all the files : ", in_cif_file_paths)
         if not os.path.isdir("process"):
             os.mkdir("process")
-        for filename in infiles:
-            print("Processing file : ", filename)
+        for in_cif_file_path in in_cif_file_paths:
+            print("Processing file : ", in_cif_file_path)
 
-            if filename in table:
-                outfile = table[filename]
+            if in_cif_file_path in m_table:
+                out_cif_file_path = m_table[in_cif_file_path]
             else:
-                outfile = renamefile(filename, list(table.values()))
-                table[filename] = outfile
-            if os.path.isfile(os.path.join("./process", outfile)):
-                print("The destination file exists", os.path.join("./process", outfile))
+                out_cif_file_path = renamefile(in_cif_file_path, list(m_table.values()))
+                m_table[in_cif_file_path] = out_cif_file_path
+            if os.path.isfile(os.path.join("./process", out_cif_file_path)):
+                print("The destination file exists", os.path.join("./process", out_cif_file_path))
                 print("###########################################################")
                 continue
-            cif = LoadCIF(filename)
-            w, cif2 = CheckSym(cif, True)
-            if len(w) == 0:
-                w = "OK"
-            print("Checking for symmetry : \n%s" % w)
-            cif2["_database_code_CSD"] = outfile[:-4]
+            m_cif = LoadCIF(in_cif_file_path)
+            m_warning, m_cif_2 = CheckSym(m_cif, True)
+            if len(m_warning) == 0:
+                m_warning = "OK"
+            print("Checking for symmetry : \n%s" % m_warning)
+            m_cif_2["_database_code_CSD"] = out_cif_file_path[:-4]
             #            print "Checking for the data needed to enter them to the Database"
-            cif, mod = CheckForCSD(cif2, name=filename)
-            if not mod: print("OK")
+            m_cif, m_mod = CheckForCSD(m_cif_2, name=in_cif_file_path)
+            if not m_mod: print("OK")
 
             print("Saving the Conversion Table")
-            f = open("ConversionTable", "w")
-            for i in table:
-                f.write("%s    %s\n" % (i, table[i]))
-            f.close()
+            m_f = open("ConversionTable", "w")
+            for m_i in m_table:
+                m_f.write("%s    %s\n" % (m_i, m_table[m_i]))
+            m_f.close()
             print("###########################################################")
 
-            if outfile[-4:].lower() != ".cif": outfile += ".cif"
-            SaveCIF(cif, "process/" + outfile)
+            if out_cif_file_path[-4:].lower() != ".cif": out_cif_file_path += ".cif"
+            SaveCIF(m_cif, "process/" + out_cif_file_path)
     elif sys.argv[0].lower().split("/")[-1] == "report":
         if len(sys.argv) == 2:
-            filename = sys.argv[1]
-            outfile = filename[:-4] + "-process.cif"
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = in_cif_file_path[:-4] + "-process.cif"
         elif len(sys.argv) == 3:
-            filename = sys.argv[1]
-            outfile = sys.argv[2]
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
             sys.exit(1)
-        cif = LoadCIF(filename)
+        m_cif = LoadCIF(in_cif_file_path)
 
-        w, cif2 = CheckSym(cif, True)
-        if len(w) == 0:
-            w = "OK"
-        print("Checking for symmetry : \n%s" % w)
+        m_warning, m_cif_2 = CheckSym(m_cif, True)
+        if len(m_warning) == 0:
+            m_warning = "OK"
+        print("Checking for symmetry : \n%s" % m_warning)
         print("Completing the CIF file with the data generated by PLATON")
-        cif3 = merge_platon(cif2, platon(filename))
+        cif3 = merge_platon(m_cif_2, platon(in_cif_file_path))
         print("Checking for the data needed to generate a report")
-        cif, mod = CheckForRST(cif3)
-        if not mod: print("OK")
-        WriteReport(filename, cif, Lang="En")
+        m_cif, m_mod = CheckForRST(cif3)
+        if not m_mod: print("OK")
+        WriteReport(in_cif_file_path, m_cif, Lang="En")
     elif sys.argv[0].lower().split("/")[-1] == "fixallsym":
         print("Doing a trivial rewrite with symmetry check")
-        infiles = []
-        for i in os.listdir("."):
-            if i[-4:].lower() == ".cif": infiles.append(i)
-        infiles.sort()
-        print("Processing all the files : ", infiles)
-        for filename in infiles:
-            print("Processing file : ", filename)
-            cif = LoadCIF(filename)
-            w, cif2 = CheckSym(cif, True)
-            SaveCIF(cif, filename)
+        in_cif_file_paths = []
+        for m_i in os.listdir("."):
+            if m_i[-4:].lower() == ".cif": in_cif_file_paths.append(m_i)
+        in_cif_file_paths.sort()
+        print("Processing all the files : ", in_cif_file_paths)
+        for in_cif_file_path in in_cif_file_paths:
+            print("Processing file : ", in_cif_file_path)
+            m_cif = LoadCIF(in_cif_file_path)
+            m_warning, m_cif_2 = CheckSym(m_cif, True)
+            SaveCIF(m_cif, in_cif_file_path)
     elif sys.argv[0].lower().split("/")[-1] == "checksym":
         if len(sys.argv) == 2:
-            filename = sys.argv[1]
-            outfile = filename[:-4] + "-process.cif"
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = in_cif_file_path[:-4] + "-process.cif"
         elif len(sys.argv) == 3:
-            filename = sys.argv[1]
-            outfile = sys.argv[2]
+            in_cif_file_path = sys.argv[1]
+            out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
             sys.exit(1)
         #        print "Doing a trivial rewrite with symmetry check on file : %s to %s"%(filename,outfile)
         #        cif=LoadCIF(filename)
-        cif = LoadCIF(filename)
-        w, cif2 = CheckSym(cif, True)
-        if len(w) == 0:
-            w = "OK"
-        print("Checking for symmetry : %s ... %s -> %s" % (w, filename, outfile))
-        SaveCIF(cif, outfile)
+        m_cif = LoadCIF(in_cif_file_path)
+        m_warning, m_cif_2 = CheckSym(m_cif, True)
+        if len(m_warning) == 0:
+            m_warning = "OK"
+        print("Checking for symmetry : %s ... %s -> %s" % (m_warning, in_cif_file_path, out_cif_file_path))
+        SaveCIF(m_cif, out_cif_file_path)
 
     else:
         print("What do you want me to do ?")

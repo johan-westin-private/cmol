@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     # read .symm file
     symm = list()
-    with open("%s.symm" % name) as f:
-        for line in f:
+    with open("%s.symm" % name) as symm_file:
+        for line in symm_file:
             if not line.split() >= 3:
                 break
 

@@ -60,11 +60,11 @@ if __name__ == '__main__':
     parser.add_option('-w', '--wdvinc', dest='wdvinc',
                       help='Find molecules with close contact of WdV radii sum + vdwinc', type='float')
 
-    (options, args) = parser.parse_args()
+    (m_options, m_args) = parser.parse_args()
 
     # arg checks
-    if not len(args) == 1:
+    if not len(m_args) == 1:
         parser.error('Single argument <name> required.\nGet more help with -h option.')
 
     # go..
-    main(options, args)
+    main(m_options, m_args)

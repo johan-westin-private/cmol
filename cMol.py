@@ -34,7 +34,8 @@ def read_cmol(basename):
         (SymOp('1/2-x,1-y,1/2+z'),)
         ((0,1),)
         '''
-        separate_args = [eval(l.rstrip().rstrip()) for l in file(basename + '.map').readlines() if l]
+        with open(basename + '.map', 'rt') as map_file:
+            separate_args = [eval(l.rstrip().rstrip()) for l in map_file.readlines() if l]
     else:
         separate_args = ()
     symops = get_symops(basename + '.cif')

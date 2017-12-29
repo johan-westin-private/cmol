@@ -126,6 +126,7 @@ class cMol(object):
         self.unitcell = unitcell
         self.f2c = self.unitcell.FractionalToCartesian
         self.c2f = self.unitcell.CartesianToFractional
+        self.mol_map = []
         self.symops = symops
 
         self.norm_h()

@@ -859,10 +859,10 @@ def platon(filename):
         print((l.strip()))
         if l.find("Chiral:") > -1:
             m = l.split()
-            c = {}
-            c["_atom_site_asymmetry_label"] = m[1]
-            c["_atom_site_asymmetry_type"] = m[9]
-            chiral.append(c)
+            chiral.append({
+                "_atom_site_asymmetry_label": m[1],
+                "_atom_site_asymmetry_type": m[9]
+            })
     o.close()
     i.close()
     cif = LoadCIF(os.path.splitext(filename)[0] + ".acc")

@@ -619,11 +619,11 @@ def exists(cif, key):
     @return: True if the key exists in the CIF dictionary and is non empty
     @rtype: boolean
     """
-    bool = False
+    is_found = False
     if key in cif:
         if len(cif[key]) >= 1:
-            if cif[key][0] != "?": bool = True
-    return bool
+            if cif[key][0] != "?": is_found = True
+    return is_found
 
 
 def CellVol(cif):
@@ -1889,8 +1889,8 @@ def escape_attrib(s, encoding=None, replace=string.replace):
 
 class XMLWriter:
 
-    def __init__(self, file, encoding="us-ascii"):
-        self.__write = file.write
+    def __init__(self, input_file, encoding="us-ascii"):
+        self.__write = input_file.write
         self.__open = 0  # true if start tag is open
         self.__tags = []
         self.__data = []
@@ -1991,8 +1991,8 @@ class XMLWriter:
     #
     # @param id Element identifier, as returned by the <b>start</b> method.
 
-    def close(self, id):
-        while len(self.__tags) > id:
+    def close(self, identity):
+        while len(self.__tags) > identity:
             self.end()
 
     ##

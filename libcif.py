@@ -262,11 +262,11 @@ def readcif(filename):
         if pos >= 0:
             text += ligne[:pos] + "\n"
             if pos > 80:
-                print(("Warning, this line is too long and could cause problems in PreQuest\n", ligne))
+                print("Warning, this line is too long and could cause problems in PreQuest\n", ligne)
         else:
             text += ligne
             if len(ligne.strip()) > 80:
-                print(("Warning, this line is too long and could cause problems in PreQuest\n", ligne))
+                print("Warning, this line is too long and could cause problems in PreQuest\n", ligne)
     return text
 
 
@@ -498,12 +498,12 @@ def cif2str(cif):
                 for key in keys:
                     rawvalue = i[key]
                     if rawvalue.find("\n") > -1:  # should add value  between ;;
-                        ligne += "\n; %s \n;\n" % (rawvalue)
+                        ligne += "\n; %s \n;\n" % rawvalue
                         txt += ligne
                         ligne = ""
                     else:
                         if len(rawvalue.split()) > 1:  # should add value between ''
-                            value = "'%s'" % (rawvalue)
+                            value = "'%s'" % rawvalue
                         else:
                             value = rawvalue
                         if len(ligne) + len(value) > 78:
@@ -543,7 +543,7 @@ def CheckSym(cif, fix=False):
                     cell, cif["_symmetry_cell_setting"])
                 cif["_symmetry_cell_setting"] = cell
         else:
-            warning += "Warning : The symmetry of the cell is not set but I think it is %s.\n" % (cell)
+            warning += "Warning : The symmetry of the cell is not set but I think it is %s.\n" % cell
             cif["_symmetry_cell_setting"] = cell
         if "_symmetry_space_group_name_H-M" in cif:
             if sg.lower() != cif["_symmetry_space_group_name_H-M"].lower():
@@ -551,7 +551,7 @@ def CheckSym(cif, fix=False):
                     sg, cif["_symmetry_space_group_name_H-M"])
                 cif["_symmetry_space_group_name_H-M"] = sg
         else:
-            warning += "Warning : The Space Group is not set but I think it is %s.\n" % (sg)
+            warning += "Warning : The Space Group is not set but I think it is %s.\n" % sg
             cif["_symmetry_space_group_name_H-M"] = sg
     if fix:
         return warning, cif
@@ -682,7 +682,7 @@ def MolForm(cif, zp):
     txt = ""
     for i in keys:
         if abs(form[i] / zp - 1) < 1E-3:
-            txt += "%s " % (i)
+            txt += "%s " % i
         else:
             txt += "%s%i " % (i, form[i] / zp)
     return txt.strip()
@@ -708,7 +708,7 @@ def MolWeight(formula):
                 x = floatp(count)
             MW += AtomicWeight[atom] * x
         else:
-            print(("WARNING !!! the program is lacking the molecular weight of " + atom))
+            print("WARNING !!! the program is lacking the molecular weight of " + atom)
     return MW
 
 
@@ -856,7 +856,7 @@ def platon(filename):
     i.write("TABL CIF\n")
     i.flush()
     for l in o.readlines():
-        print((l.strip()))
+        print(l.strip())
         if l.find("Chiral:") > -1:
             m = l.split()
             chiral.append({
@@ -1556,14 +1556,14 @@ def structureImage(basename, structure="structure"):
         txt = eval(input(
             "I will now lauch PLATON and let you chose the simulated powder pattern of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit."))
         while not os.path.isfile(basename + ".ps"):
-            i = os.popen("platon %s.cif" % (basename))
-            for l in i.readlines(): print((l.strip()))
+            i = os.popen("platon %s.cif" % basename)
+            for l in i.readlines(): print(l.strip())
             i.close()
     else:
         txt = eval(input(
             "I will now lauch PLATON and let you chose the %s representation of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit." % structure))
         while not os.path.isfile(basename + ".ps"):
-            i, o = os.popen2("platon -o %s.cif" % (basename))
+            i, o = os.popen2("platon -o %s.cif" % basename)
             if structure.lower() == "adp":
                 i.write("plot adp\n")
             else:
@@ -1571,14 +1571,14 @@ def structureImage(basename, structure="structure"):
             i.flush()
             i.write("menu on\n")
             i.flush()
-            for l in o.readlines(): print((l.strip()))
+            for l in o.readlines(): print(l.strip())
             i.close()
 
     os.rename(basename + ".ps", "%s-%s.ps" % (basename, structure))
     print("Converting PostScript to PNG ... can take a while")
     inp = os.popen("convert -rotate 90 -quality 90 -geometry 2400x1800 %s-%s.ps %s-%s.png" % (
         basename, structure, basename, structure))
-    for l in inp.readlines(): print((l.strip()))
+    for l in inp.readlines(): print(l.strip())
     inp.close()
     if (not os.path.isfile("%s-%s.png" % (basename, structure)) and os.path.isfile(
             "%s-%s.png.0" % (basename, structure))):
@@ -1591,7 +1591,7 @@ def structureImage(basename, structure="structure"):
             if i.find("%s-%s.png." % (name, structure)) == 0: dir2.append(i)
         dir2.sort()
         os.rename(os.path.join(workdir, dir2[-1]), "%s-%s.png" % (basename, structure))
-    print(("Done !\n" + 70 * "_"))
+    print("Done !\n" + 70 * "_")
 
 
 def BondLength(cif):
@@ -1951,7 +1951,7 @@ class XMLWriter:
         """insert raw HTML data to the XML-file
         """
         self.__flush()
-        self.__write("%s" % (comment))
+        self.__write("%s" % comment)
 
     ##
     # Adds character data to the output stream.
@@ -2082,7 +2082,7 @@ def renamefile(infile, namelist):
         if i.find(name) == 0: count += 1
     name += str(count)
 
-    print(("I suggest using %s as reference for the database for file %s" % (name, infile)))
+    print("I suggest using %s as reference for the database for file %s" % (name, infile))
     while True:
         txt = eval(input(" Database reference (<= 8 characters) [%s]-->" % name))
         if len(txt) == 0:
@@ -2096,7 +2096,7 @@ def renamefile(infile, namelist):
         for i in namelist:
             if i.find(name) == 0: count += 1
         name += str(count)
-        print(("using " + name))
+        print("using " + name)
 
     return name + ".cif"
 
@@ -2122,7 +2122,7 @@ def MergeSg(name, kcd, sg):
     w, cif = CheckSym(kcd, True)
     if len(w) == 0:
         w = "OK"
-    print(("Checking for symmetry : \n%s" % w))
+    print("Checking for symmetry : \n%s" % w)
     return cif
 
 
@@ -2141,7 +2141,7 @@ if __name__ == '__main__':
         w, cif2 = CheckSym(cif, True)
         if len(w) == 0:
             w = "OK"
-        print(("Checking for symmetry : \n%s" % w))
+        print("Checking for symmetry : \n%s" % w)
         print("Checking for the data needed to enter them to the Database")
 
         cif, mod = CheckForCSD(cif2, name=filename)
@@ -2165,11 +2165,11 @@ if __name__ == '__main__':
             for i in ct:
                 j = i.split(None, 1)
                 table[j[0].strip()] = j[1].strip()
-        print(("Processing all the files : ", infiles))
+        print("Processing all the files : ", infiles)
         if not os.path.isdir("process"):
             os.mkdir("process")
         for filename in infiles:
-            print(("Processing file : ", filename))
+            print("Processing file : ", filename)
 
             if filename in table:
                 outfile = table[filename]
@@ -2177,14 +2177,14 @@ if __name__ == '__main__':
                 outfile = renamefile(filename, list(table.values()))
                 table[filename] = outfile
             if os.path.isfile(os.path.join("./process", outfile)):
-                print(("The destination file exists", os.path.join("./process", outfile)))
+                print("The destination file exists", os.path.join("./process", outfile))
                 print("###########################################################")
                 continue
             cif = LoadCIF(filename)
             w, cif2 = CheckSym(cif, True)
             if len(w) == 0:
                 w = "OK"
-            print(("Checking for symmetry : \n%s" % w))
+            print("Checking for symmetry : \n%s" % w)
             cif2["_database_code_CSD"] = outfile[:-4]
             #            print "Checking for the data needed to enter them to the Database"
             cif, mod = CheckForCSD(cif2, name=filename)
@@ -2214,7 +2214,7 @@ if __name__ == '__main__':
         w, cif2 = CheckSym(cif, True)
         if len(w) == 0:
             w = "OK"
-        print(("Checking for symmetry : \n%s" % w))
+        print("Checking for symmetry : \n%s" % w)
         print("Completing the CIF file with the data generated by PLATON")
         cif3 = merge_platon(cif2, platon(filename))
         print("Checking for the data needed to generate a report")
@@ -2227,9 +2227,9 @@ if __name__ == '__main__':
         for i in os.listdir("."):
             if i[-4:].lower() == ".cif": infiles.append(i)
         infiles.sort()
-        print(("Processing all the files : ", infiles))
+        print("Processing all the files : ", infiles)
         for filename in infiles:
-            print(("Processing file : ", filename))
+            print("Processing file : ", filename)
             cif = LoadCIF(filename)
             w, cif2 = CheckSym(cif, True)
             SaveCIF(cif, filename)
@@ -2249,7 +2249,7 @@ if __name__ == '__main__':
         w, cif2 = CheckSym(cif, True)
         if len(w) == 0:
             w = "OK"
-        print(("Checking for symmetry : %s ... %s -> %s" % (w, filename, outfile)))
+        print("Checking for symmetry : %s ... %s -> %s" % (w, filename, outfile))
         SaveCIF(cif, outfile)
 
     else:

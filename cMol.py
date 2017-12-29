@@ -171,7 +171,7 @@ class cMol(object):
             vc.append(int(i))
         t = ob.vector3(vc[0], vc[1], vc[2])
         if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
-            print(("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2])))
+            print("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2]))
             tc = self.f2c(t)
             for i in range(self.OBMol.NumAtoms()):
                 atom = self.OBMol.GetAtom(i + 1)

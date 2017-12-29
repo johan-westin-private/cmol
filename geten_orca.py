@@ -47,7 +47,7 @@ if __name__ == '__main__':
     #read energies
     en_list=list()
     if options.bsse:
-        for i in xrange(len(symm)):
+        for i in range(len(symm)):
             e=[]
             for suff in ('-m0-1.out', '-m0.out', '-m1.out'):
                 e.append(get_sp_en_orca(name+'-d%03i'%(i+1)+suff))
@@ -56,9 +56,9 @@ if __name__ == '__main__':
 
     if not options.bsse:
         ene_m={}
-        for i in xrange(len(symm)):
+        for i in range(len(symm)):
             for m in symm[i][1], symm[i][2]:
-                if not ene_m.has_key(m):
+                if m not in ene_m:
                     ene_m[m]=get_sp_en_orca(name+'-m%02i.out' %int(m))
             e0=get_sp_en_orca(name+'-d%03i.out'%(i+1))
             energy=(e0-ene_m[symm[i][1]]-ene_m[symm[i][2]])*627.5095

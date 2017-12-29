@@ -15,7 +15,7 @@ def read_symm(fil):
     symm = list()
     for i in p:
         ii = i.split()
-        assert len(ii) >= 3, 'Each line of symm file should contain three records reparated by spaces.'
+        assert len(ii) >= 3, 'Each line of symm file should contain three records separated by spaces.'
         ii[0] = SymOp(ii[0])
         try:
             ii[1] = int(ii[1])
@@ -124,7 +124,7 @@ def main(options, args):
     # molecule
     mol = make_evd_struct(cmol, centers, vectors, symm, evd=False, mol=True)
     writepdb(mol, basename + '_m.pdb')
-    # molrecule+evd
+    # molecule+evd
     mol = make_evd_struct(cmol, centers, vectors, symm, evd=True, mol=True)
     writepdb(mol, basename + '_c.pdb')
     # evd

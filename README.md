@@ -1,5 +1,5 @@
 #CMOL
-##### *Collection of Python scripts for Energy Vector Digram analysis of crystal structures.*
+##### *Collection of Python scripts for Energy Vector Diagram analysis of crystal structures.*
 
 ###Introduction
 
@@ -51,11 +51,11 @@ Start with `MyStructure.cif`
 
   The script will read CIF file, normalize positions of hydrogen atoms (C-H: 1.089, N-H: 1.015, O-H: 0.993), find and for each symmetry unique molecule will calculate its first coordination sphere. Will output
 
-  `MyStructure.symm` -  each line contains symmemetry operation and IDs of base and symmetry related molecule for all molecules from first coordination sphere (defined as all molecule which have contacs with base molecule within sum of VdW radii + 1A).
+  `MyStructure.symm` -  each line contains symmetry operation and IDs of base and symmetry related molecule for all molecules from first coordination sphere (defined as all molecule which have contact with base molecule within sum of VdW radii + 1A).
 
   `MyStructure-s##.xyz` - geometry of first coordination sphere for each symmetry unique molecule
 
-  `MyStructure-d###.xyz` - geometry of dimers (base molecule + neighbiring molecule)
+  `MyStructure-d###.xyz` - geometry of dimers (base molecule + neighboring molecule)
 
 ####Perform quantum-chemical calculations of interaction energies
 
@@ -69,6 +69,6 @@ Run calculations. You can extract interaction energies with geten_orca.py bash s
    
 ####Build EVDs
 
-  `urchins.py MyStructure` will read MySTructure.cif MyStructure.symm and MyStructure.ene files and output PDB file suitable for viewing with Mercury. 
+  `urchins.py MyStructure` will read MyStructure.cif MyStructure.symm and MyStructure.ene files and output PDB file suitable for viewing with Mercury. 
   
   

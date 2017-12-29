@@ -82,7 +82,7 @@ class SymOp:
 
     def set_from_str(self, s):
         assert type(s) is bytes, 's is not string: %s' % s
-        assert 'x' in s and 'y' in s and 'z' in s, 's sould containt x,y,z: %s' % s
+        assert 'x' in s and 'y' in s and 'z' in s, 's should contain x,y,z: %s' % s
         (x, y, z) = (0, 0, 0)
         s0 = eval(s)
         vt2 = [int(i) for i in s0]

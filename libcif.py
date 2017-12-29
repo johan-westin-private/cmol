@@ -1921,7 +1921,9 @@ class XMLWriter:
     #    can be given as keyword arguments.
     # @return An element identifier.
 
-    def start(self, tag, attrib={}, **extra):
+    def start(self, tag, attrib=None, **extra):
+        if attrib is None:
+            attrib = {}
         self.__flush()
         tag = escape_cdata(tag, self.__encoding)
         self.__data = []
@@ -2001,7 +2003,9 @@ class XMLWriter:
     # <b>data</b>, and <b>end</b> in sequence. The <b>text</b> argument
     # can be omitted.
 
-    def element(self, tag, text=None, attrib={}, **extra):
+    def element(self, tag, text=None, attrib=None, **extra):
+        if attrib is None:
+            attrib = {}
         self.start(*(tag, attrib), **extra)
         if text:
             self.data(text)

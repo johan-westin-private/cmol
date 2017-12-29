@@ -190,7 +190,9 @@ class cMol(object):
             if anums[0] == 1: bond.SetLength(atoms[1], _bond_data[anums[1]])
             if anums[1] == 1: bond.SetLength(atoms[0], _bond_data[anums[0]])
 
-    def set_mon_map(self, mons=[]):
+    def set_mon_map(self, mons=None):
+        if mons is None:
+            mons = []
         self.mol_map = [list() for i in mons]
         for mon in mons:
             for i in range(mon.NumAtoms()):

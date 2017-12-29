@@ -273,7 +273,6 @@ def oneloop(fields, start):
     @rtype: tupple
     """
     #    in earch loop we first search the length of the loop
-    curloop = {}
     loop = []
     keys = []
     i = start + 1
@@ -342,7 +341,6 @@ def parsecif(text):
     cif = {}
     loopidx = []
     looplen = []
-    start = 0
     loop = []
     # first of all : separate the cif file in fields
     fields = splitcif(text.strip())
@@ -367,6 +365,7 @@ def parsecif(text):
     return cif
 
 
+# noinspection PyUnusedLocal
 def splitcif(text):
     """Separate the text in fields as defined in the CIF
     @param text: the content of the CIF-file
@@ -375,56 +374,57 @@ def splitcif(text):
     @rtype: list
     """
     fields = []
+    found = False
     while True:
         if len(text) == 0:
             break
         elif text[0] == "'":
             idx = 0
-            fini = False
-            while not fini:
+            found = False
+            while not found:
                 idx += 1 + text[idx + 1:].find("'")
                 ##########debuging    in case we arrive at the end of the text
                 if idx >= len(text) - 1:
                     #                    print text,idx,len(text)
                     fields.append(text[1:-1].strip())
                     text = ""
-                    fini = True
+                    found = True
                     break
 
                 if text[idx + 1] in Blank:
                     fields.append(text[1:idx].strip())
                     text1 = text[idx + 1:]
                     text = text1.strip()
-                    fini = True
+                    found = True
 
         elif text[0] == '"':
             idx = 0
-            fini = False
-            while not fini:
+            found = False
+            while not found:
                 idx += 1 + text[idx + 1:].find('"')
                 ##########debuging    in case we arrive at the end of the text
                 if idx >= len(text) - 1:
                     #                    print text,idx,len(text)
                     fields.append(text[1:-1].strip())
                     text = ""
-                    fini = True
+                    found = True
                     break
 
                 if text[idx + 1] in Blank:
                     fields.append(text[1:idx].strip())
                     text1 = text[idx + 1:]
                     text = text1.strip()
-                    fini = True
+                    found = True
         elif text[0] == ';':
             idx = 0
-            fini = False
-            while not fini:
+            found = False
+            while not found:
                 idx += 1 + text[idx + 1:].find(';')
                 if text[idx - 1] in EOL:
                     fields.append(text[1:idx - 1].strip())
                     text1 = text[idx + 1:]
                     text = text1.strip()
-                    fini = True
+                    found = True
         else:
             f = text.split(None, 1)[0]
             fields.append(f)
@@ -580,6 +580,7 @@ def symop(cif):
                 sig = "+"
             else:
                 sig = j[pos - 1]
+            # noinspection PyUnusedLocal
             res = ""
             if pos in [0, 1]:
                 if pos < len(j) - 1:
@@ -888,22 +889,21 @@ def merge_platon(cif, acc):
     @return: merged CIF-object
     @rtype: dictionary
     """
-    cif1 = cif
-    cif2 = acc
+    cif_platon = acc
     # first of all removes the sugar ;)
     if exists(cif, "_chemical_formula_moiety") and cif["_chemical_formula_moiety"] == "C6 H12 O6":    cif[
         "_chemical_formula_moiety"] = "?"
     PassKey = ["_publ_contact_letter", "_publ_requested_journal", "_publ_contact_letter", "_loop",
                "_publ_section_references", "_publ_section_figure_captions"]
-    for i in cif2:
+    for i in cif_platon:
         if i in PassKey:
             continue
-        if (not exists(cif, i)) and exists(cif2, i):
-            cif[i] = cif2[i]
+        if (not exists(cif, i)) and exists(cif_platon, i):
+            cif[i] = cif_platon[i]
     loop1 = []
     for loop in cif["loop_"]:
         loop1.append(loop[0])
-    for loop in cif2["loop_"]:
+    for loop in cif_platon["loop_"]:
         exist = False
         curkeys = loop[0]
         for l1 in loop1:
@@ -1547,6 +1547,7 @@ def structureImage(basename, structure="structure"):
     """
 
     if structure.lower() == "powder":
+        # noinspection PyUnusedLocal
         txt = eval(input(
             "I will now lauch PLATON and let you chose the simulated powder pattern of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit."))
         while not os.path.isfile(basename + ".ps"):
@@ -1554,6 +1555,7 @@ def structureImage(basename, structure="structure"):
             for l in i.readlines(): print(l.strip())
             i.close()
     else:
+        # noinspection PyUnusedLocal
         txt = eval(input(
             "I will now lauch PLATON and let you chose the %s representation of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit." % structure))
         while not os.path.isfile(basename + ".ps"):
@@ -1820,6 +1822,7 @@ def formula2chem(txt):
 try:
     str("")
 except NameError:
+    # noinspection PyUnusedLocal
     def encode(s, encoding):
         # 1.5.2: application must use the right encoding
         return s

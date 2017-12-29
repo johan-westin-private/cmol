@@ -5,6 +5,7 @@ import sys
 from cMol import *
 
 
+# noinspection PyUnusedLocal
 def main(options, args):
     basename = args[0]
 

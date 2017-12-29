@@ -106,11 +106,13 @@ def make_evd_struct(cmol, centers, vectors, symm, evd=True, mol=True):
 
 def writepdb(mol, filename):
     obconversion = ob.OBConversion()
+    # noinspection PyUnusedLocal
     formatok = obconversion.SetOutFormat('pdb')
     obconversion.WriteFile(mol, filename)
     obconversion.CloseOutFile()
 
 
+# noinspection PyUnusedLocal
 def main(options, args):
     basename = args[0]
     symm = read_symm(basename + '.symm')

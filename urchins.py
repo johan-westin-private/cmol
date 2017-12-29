@@ -10,7 +10,7 @@ import types
 def read_symm(fil):
     assert os.path.isfile(fil), "File not found: %s" % fil
     with open(fil, 'r') as f:
-        p = filter(None, (line.rstrip() for line in f))
+        p = [_f for _f in (line.rstrip() for line in f) if _f]
     symm = list()
     for i in p:
         ii = i.split()
@@ -20,20 +20,20 @@ def read_symm(fil):
             ii[1] = int(ii[1])
             ii[2] = int(ii[2])
         except:
-            raise ValueError, "Failed to parse line in symm file:\n%s\n" % i
+            raise ValueError("Failed to parse line in symm file:\n%s\n" % i)
         symm.append(ii)
     return symm
 
 def read_ene(fil):
     assert os.path.isfile(fil), "File not found: %s" % fil
     with open(fil, 'r') as f:
-        p = filter(None, (line.rstrip() for line in f))
+        p = [_f for _f in (line.rstrip() for line in f) if _f]
     ene = list()
     for i in p:
         try:
             i = float(i)
         except:
-            raise ValueError, "Failed to parse line in ene file:\n%s\n" % i
+            raise ValueError("Failed to parse line in ene file:\n%s\n" % i)
         # ignore zero and positive values, just replace with small negative
         if i >= 0:
             i = -0.05
@@ -58,7 +58,7 @@ def get_evd_centers(cmol):
 def get_evd_vectors(centers,symm,ene):
     vectors = list()
     en_scale = 1 / float(2 * min(ene))
-    for i in xrange(len(symm)):
+    for i in range(len(symm)):
         s = symm[i][0]
         e = ene[i]
         v0 = centers[symm[i][1]]
@@ -84,12 +84,12 @@ def make_evd_struct(cmol,centers,vectors,symm,evd=True,mol=True):
             atom.SetAtomicNum(0)
             atom.SetVector(cmol.f2c(c))
             evdmol.AddAtom(atom)
-        for i in xrange(len(vectors)):
+        for i in range(len(vectors)):
             atom = ob.OBAtom()
             atom.SetAtomicNum(0)
             atom.SetVector(cmol.f2c(vectors[i]))
             evdmol.AddAtom(atom)
-        for i in xrange(len(vectors)):
+        for i in range(len(vectors)):
             bond = ob.OBBond()
             bond.SetBegin(evdmol.GetAtom(symm[i][1]+nat+1))
             bond.SetEnd(evdmol.GetAtom(i+len(centers)+nat+1))

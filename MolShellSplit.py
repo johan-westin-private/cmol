@@ -21,7 +21,7 @@ def main(options,args):
 
     with open(basename+'.symm','w') as symm:
         id=0
-        for id0 in xrange(len(cmol.mol_map)):
+        for id0 in range(len(cmol.mol_map)):
             m0=ob.OBMol()
             for i in cmol.mol_map[id0]:
                 m0.AddAtom(cmol.atoms[i])

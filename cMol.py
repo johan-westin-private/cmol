@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import division
+
 
 from fractions import Fraction
 from libcif import parsecif, readcif
@@ -37,7 +37,7 @@ def read_cmol(basename):
     else:
         separate_args = ()
     symops = get_symops(basename + '.cif')
-    mol = pybel.readfile('cif', basename + '.cif').next()
+    mol = next(pybel.readfile('cif', basename + '.cif'))
     return cMol(mol.OBMol, mol.unitcell, symops, separate_args=separate_args)
 
 def printvec(v):
@@ -46,7 +46,7 @@ def printvec(v):
 class SymOp:
     def __init__(self,r=ob.transform3d(1),t=ob.vector3(0,0,0)):
         self.T=ob.vector3(0,0,0)
-        if type(r) is types.StringType:
+        if type(r) is bytes:
             self.set_from_str(r)
         else:
             self.R=r
@@ -67,7 +67,7 @@ class SymOp:
         #symmetry operation
         t=[v[3]+self.T.GetX(),v[7]+self.T.GetY(),v[11]+self.T.GetZ()]
         #construct scring
-        for i in xrange(3):
+        for i in range(3):
             t[i]=str(Fraction.from_float(t[i]).limit_denominator(6))
             t[i]+='+'+s[i]
             t[i]=t[i].replace('+-','-')
@@ -78,7 +78,7 @@ class SymOp:
         return ','.join(t)
         
     def set_from_str(self,s):
-        assert type(s) is types.StringType, 's is not string: %s' %s
+        assert type(s) is bytes, 's is not string: %s' %s
         assert 'x' in s and 'y' in s and 'z' in s, 's sould containt x,y,z: %s' %s
         (x,y,z)=(0,0,0)
         s0=eval(s)
@@ -165,9 +165,9 @@ class cMol(object):
            vc.append(int(i))
        t = ob.vector3(vc[0], vc[1], vc[2])
        if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
-            print "WARNING: moving by [ %4.1f %4.1f %4.1f ]" %(vc[0], vc[1], vc[2])
+            print(("WARNING: moving by [ %4.1f %4.1f %4.1f ]" %(vc[0], vc[1], vc[2])))
             tc=self.f2c(t)
-            for i in xrange(self.OBMol.NumAtoms()):
+            for i in range(self.OBMol.NumAtoms()):
                 atom=self.OBMol.GetAtom(i+1)
                 v = ob.vector3(atom.GetX(), atom.GetY(), atom.GetZ()) #wtf! GetVector fails with segfault
                 v -= tc
@@ -230,7 +230,7 @@ class cMol(object):
                 for i in molmap:
                     m = ob.OBMol()
                     for j in i:
-                        for k in xrange(monsx[j].NumAtoms()):
+                        for k in range(monsx[j].NumAtoms()):
                             m.AddAtom(monsx[j].GetAtom(k + 1))
                     m.ConnectTheDots()
                     res.append(m)
@@ -253,7 +253,7 @@ class cMol(object):
             _found = []
             I = s.is_identity()
             for a0idx in self.mol_map[molid]:
-                for molid1 in xrange(len(self.mol_map)):
+                for molid1 in range(len(self.mol_map)):
                     if molid1 in _found: continue
                     if I and molid == molid1: continue
                     for a1idx in self.mol_map[molid1]:

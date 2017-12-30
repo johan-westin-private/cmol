@@ -13,7 +13,6 @@
 import os
 import os.path
 import re
-import string
 import sys
 import time
 
@@ -277,20 +276,20 @@ def readcif(filename):
     """
     if not os.path.isfile(filename):
         raise Exception("I cannot find the file %s" % filename)
-    f = open(filename, "r").readlines()
-    text = ""
-    for ligne in f:
-        pos = ligne.find("#")
-        if pos >= 0:
-            text += ligne[:pos] + "\n"
-            if pos > 80:
-                print(('Warning, this line is too long and could'
-                       ' cause problems in PreQuest\n'), ligne)
-        else:
-            text += ligne
-            if len(ligne.strip()) > 80:
-                print(('Warning, this line is too long and could'
-                       ' cause problems in PreQuest\n'), ligne)
+    text = ''
+    with open(filename, 'r') as f:
+        for line in f:
+            pos = line.find("#")
+            if pos >= 0:
+                text += line[:pos] + "\n"
+                if pos > 80:
+                    print(('Warning, this line is too long and could'
+                           ' cause problems in PreQuest\n'), line)
+            else:
+                text += line
+                if len(line.strip()) > 80:
+                    print(('Warning, this line is too long and could'
+                           ' cause problems in PreQuest\n'), line)
     return text
 
 
@@ -308,13 +307,13 @@ def oneloop(fields, start):
     loop = []
     keys = []
     i = start + 1
-    fini = False
-    while not fini:
+    finished = False
+    while not finished:
         if fields[i][0] == "_":
             keys.append(fields[i])  # .lower())
             i += 1
         else:
-            fini = True
+            finished = True
     data = []
     while True:
         if i >= len(fields):
@@ -474,9 +473,8 @@ def SaveCIF(cif, filename="test.cif"):
     """transforms the CIF object in string and write it into the given file"""
     txt = cif2str(cif)
     try:
-        f = open(filename, "w")
-        f.write(txt)
-        f.close()
+        with open(filename, 'w') as f:
+            f.write(txt)
     except Exception:
         raise Exception("Error during the writing of this file : %s" % filename)
 
@@ -1257,108 +1255,107 @@ def WriteReport(filename, cif, Lang="En"):
     while not os.path.isfile("%s-%s.png" % (basename, "powder")):
         structureImage(basename, structure="powder")
 
-    f = open(basename + ".html", "w")
-    w = XMLWriter(f)
-    html = w.start("html")
-    w.start("head")
+    with open(basename + ".html", "w") as f:
+        w = XMLWriter(f)
+        html = w.start("html")
+        w.start("head")
 
-    if Lang.lower() == "fr":
-        w.element("title", "Rapport de diffraction X du %s \n" %
-                  cif["_chemical_name_common"])
-    elif Lang.lower() in ["en", "us"]:
-        w.element("title", "Report of X-Ray diffraction of %s \n" %
-                  cif["_chemical_name_common"])
-    for i in Version:
-        w.element("meta", name="generator", value=i)
-    w.end("head")
+        if Lang.lower() == "fr":
+            w.element("title", "Rapport de diffraction X du %s \n" %
+                      cif["_chemical_name_common"])
+        elif Lang.lower() in ["en", "us"]:
+            w.element("title", "Report of X-Ray diffraction of %s \n" %
+                      cif["_chemical_name_common"])
+        for i in Version:
+            w.element("meta", name="generator", value=i)
+        w.end("head")
 
-    w.start("body")
-    if Lang.lower() == "fr":
-        MainReportFR(w, cif)
-    elif Lang.lower() in ["en", "us"]:
-        MainReportEN(w, cif)
-    w.start("center")
-    w.element("h2", "Appendix\n")
-    w.element("hr", " ")
-    w.element("h3", ('Figure 1 : Structural representation of the'
-                     ' molecule with atoms labels.'))
-    w.rawdata('<img  src="%s-structure.png" border=0 Width="100%%">' %
-              os.path.dirname(basename))
-    w.element("hr", " ")
-    w.element("h3", ('Figure 2 : Ortep representation of the molecule with'
-                     ' thermal ellipsoids at 50%.'))
-    w.rawdata('<img  src="%s-ADP.png" border=0 Width="100%%">' %
-              os.path.dirname(basename))
-    w.element("hr", " ")
-    w.element("h3", ('Figure 3 : Simulated powder diffraction pattern from'
-                     ' the crystal structure.'))
-    w.rawdata('<img  src="%s-powder.png" border=0 Width="100%%">' %
-              os.path.dirname(basename))
-    w.element("hr", " ")
-    w.element("h3", "Table 1: Crystal data and structure refinement.\n")
-    XraySummary(w, cif)
-    w.element("hr", " ")
-    w.start("h3")
-    w.rawdata("""Table 2: Atomic coordinates (x 10<sup>4</sup>) and equivalent 
-     isotropic displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).
-    <br>U(eq) is defined as one third of the trace of the orthogonalized
-     U<sub>ij</sub> tensor.""")
-    w.end("h3")
-    heavy, hydro = AtomPositions(cif)
-    AtomicCoord(w, heavy)
-    w.element("hr", " ")
-    w.start("h3")
-    w.rawdata("""Table 3: Bond lengths (&Aring;ngstrom).""")
-    w.end("h3")
-    Html2table(w, BondLength(cif), "Bond", "Length (Е)")
-    w.element("hr", " ")
-    w.start("h3")
-    w.rawdata("""Table 4: Bond angles (°).""")
-    w.end("h3")
-    Html2table(w, BondAngle(cif), "Atoms", "Angle (°)")
-    w.element("hr", " ")
-    w.start("h3")
-    w.rawdata("""Table 5: Hydrogen coordinates (x 10<sup>4</sup>) and isotropic 
-     displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).""")
-    w.end("h3")
-    AtomicCoord(w, hydro)
-    w.element("hr", " ")
-    #####################
-    w.start("h3")
-    w.rawdata("""Table 6: Hydrogen bonds with bond lengths (&Aring;ngstrom) and
-     angles (degrees °).""")
-    w.end("h3")
+        w.start("body")
+        if Lang.lower() == "fr":
+            MainReportFR(w, cif)
+        elif Lang.lower() in ["en", "us"]:
+            MainReportEN(w, cif)
+        w.start("center")
+        w.element("h2", "Appendix\n")
+        w.element("hr", " ")
+        w.element("h3", ('Figure 1 : Structural representation of the'
+                         ' molecule with atoms labels.'))
+        w.rawdata('<img  src="%s-structure.png" border=0 Width="100%%">' %
+                  os.path.dirname(basename))
+        w.element("hr", " ")
+        w.element("h3", ('Figure 2 : Ortep representation of the molecule with'
+                         ' thermal ellipsoids at 50%.'))
+        w.rawdata('<img  src="%s-ADP.png" border=0 Width="100%%">' %
+                  os.path.dirname(basename))
+        w.element("hr", " ")
+        w.element("h3", ('Figure 3 : Simulated powder diffraction pattern from'
+                         ' the crystal structure.'))
+        w.rawdata('<img  src="%s-powder.png" border=0 Width="100%%">' %
+                  os.path.dirname(basename))
+        w.element("hr", " ")
+        w.element("h3", "Table 1: Crystal data and structure refinement.\n")
+        XraySummary(w, cif)
+        w.element("hr", " ")
+        w.start("h3")
+        w.rawdata("""Table 2: Atomic coordinates (x 10<sup>4</sup>) and equivalent 
+         isotropic displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).
+        <br>U(eq) is defined as one third of the trace of the orthogonalized
+         U<sub>ij</sub> tensor.""")
+        w.end("h3")
+        heavy, hydro = AtomPositions(cif)
+        AtomicCoord(w, heavy)
+        w.element("hr", " ")
+        w.start("h3")
+        w.rawdata("""Table 3: Bond lengths (&Aring;ngstrom).""")
+        w.end("h3")
+        Html2table(w, BondLength(cif), "Bond", "Length (Е)")
+        w.element("hr", " ")
+        w.start("h3")
+        w.rawdata("""Table 4: Bond angles (°).""")
+        w.end("h3")
+        Html2table(w, BondAngle(cif), "Atoms", "Angle (°)")
+        w.element("hr", " ")
+        w.start("h3")
+        w.rawdata("""Table 5: Hydrogen coordinates (x 10<sup>4</sup>) and isotropic 
+         displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).""")
+        w.end("h3")
+        AtomicCoord(w, hydro)
+        w.element("hr", " ")
+        #####################
+        w.start("h3")
+        w.rawdata("""Table 6: Hydrogen bonds with bond lengths (&Aring;ngstrom) and
+         angles (degrees °).""")
+        w.end("h3")
 
-    w.start("p")
-    w.start("table cellspacing=10")
-    w.start("tr")
-    w.element("th", "D ---- H ...... A")
-    w.element("th", "Distance (D-H)")
-    w.element("th", "Distance (H..A)")
-    w.element("th", "Distance (D...A)")
-    w.element("th", "Angle (D-H..A)")
+        w.start("p")
+        w.start("table cellspacing=10")
+        w.start("tr")
+        w.element("th", "D ---- H ...... A")
+        w.element("th", "Distance (D-H)")
+        w.element("th", "Distance (H..A)")
+        w.element("th", "Distance (D...A)")
+        w.element("th", "Angle (D-H..A)")
 
-    for loop in cif["loop_"]:
-        if loop[0][0].find("_geom_hbond") == 0:
-            for i in loop[1]:
-                w.end("tr")
-                w.start("tr")
-                w.element("td", "%s - %s ... %s" % (
-                    i["_geom_hbond_atom_site_label_D"],
-                    i["_geom_hbond_atom_site_label_H"],
-                    i["_geom_hbond_atom_site_label_A"]))
-                w.element("td", i["_geom_hbond_distance_DH"])
-                w.element("td", i["_geom_hbond_distance_HA"])
-                w.element("td", i["_geom_hbond_distance_DA"])
-                w.element("td", i["_geom_hbond_angle_DHA"])
-    w.end("tr")
-    w.end("table cellspacing=10")
-    w.end("p")
-    w.element("hr", " ")
-    w.end("center")
-    w.end("body")
-    w.close(html)
-    f.close()
+        for loop in cif["loop_"]:
+            if loop[0][0].find("_geom_hbond") == 0:
+                for i in loop[1]:
+                    w.end("tr")
+                    w.start("tr")
+                    w.element("td", "%s - %s ... %s" % (
+                        i["_geom_hbond_atom_site_label_D"],
+                        i["_geom_hbond_atom_site_label_H"],
+                        i["_geom_hbond_atom_site_label_A"]))
+                    w.element("td", i["_geom_hbond_distance_DH"])
+                    w.element("td", i["_geom_hbond_distance_HA"])
+                    w.element("td", i["_geom_hbond_distance_DA"])
+                    w.element("td", i["_geom_hbond_angle_DHA"])
+        w.end("tr")
+        w.end("table cellspacing=10")
+        w.end("p")
+        w.element("hr", " ")
+        w.end("center")
+        w.end("body")
+        w.close(html)
     print("Launching Mozilla to view the report")
     os.system(
         "mozilla file://%s &" % os.path.abspath("./" + basename + ".html")
@@ -2483,9 +2480,9 @@ if __name__ == '__main__':
         in_cif_file_paths.sort()
         if os.path.isfile("ConversionTable"):
             print("Loading the Conversion Table")
-            m_f = open("ConversionTable", "r")
-            ct = m_f.readlines()
-            m_f.close()
+            conversion_table = []
+            with open("ConversionTable", 'r') as conversion_table_file:
+                ct = conversion_table_file.readlines()
             for m_i in ct:
                 m_j = m_i.split(None, 1)
                 m_table[m_j[0].strip()] = m_j[1].strip()
@@ -2519,10 +2516,9 @@ if __name__ == '__main__':
                 print("OK")
 
             print("Saving the Conversion Table")
-            m_f = open("ConversionTable", "w")
-            for m_i in m_table:
-                m_f.write("%s    %s\n" % (m_i, m_table[m_i]))
-            m_f.close()
+            with open("ConversionTable", 'w') as conversion_table_file:
+                for m_i in m_table:
+                    conversion_table_file.write("%s    %s\n" % (m_i, m_table[m_i]))
             print(60*'#')
 
             if out_cif_file_path[-4:].lower() != ".cif":

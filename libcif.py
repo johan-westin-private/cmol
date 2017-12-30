@@ -1,9 +1,11 @@
 #!/usr/bin/python2
 # -*- coding: latin1 -*-
 # this is a library with modules for reading, writing and transforming CIF files
-# Written by Jerome Kieffer Email: jerome.kieffer at terre-adelie.org or jerome.kieffer at terre-adelie.org
+# Written by Jerome Kieffer Email: jerome.kieffer at terre-adelie.org or
+# jerome.kieffer at terre-adelie.org
 #
-# Needs a functional version of platon, convert (imageMagic) and mozilla to generate reports
+# Needs a functional version of platon, convert (imageMagic) and mozilla to
+#  generate reports
 
 # !/usr/nekoware/bin/python
 # !/disk1/cambridge/c_sgiv6/bin/python2.2
@@ -15,43 +17,46 @@ import string
 import sys
 import time
 
-# at  the moment, the symmetries are not yet complete. please send me the modifications by Email
+# at  the moment, the symmetries are not yet complete.
+# please send me the modifications by Email
 
-Symmetries = {"x,y,z": ['Triclinic', 'P 1'],
-              "x,y,z;-x,-y,-z": ['Triclinic', 'P -1'],
-              "x,y,z;-x,y+1/2,-z": ['Monoclinic', 'P 21'],
-              "x,y,z;-x,y+1/2,-z+1/2;-x,-y,-z;x,-y+1/2,z+1/2": ['Monoclinic', 'P 21/c'],
-              "x,y,z;-x,y+1/2,-z+1/2;-x,-y,-z;x,-y-1/2,z-1/2": ['Monoclinic', 'P 21/c'],
-              "x,y,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x-1/2,-y-1/2,z-1/2": ['Monoclinic', 'P 21/n'],
-              "x,y,z;x+1/2,-y+1/2,z+1/2;-x,-y,-z;-x-1/2,y-1/2,-z-1/2": ['Monoclinic', 'P 21/n'],
-              "x,y,z;-x+1/2,y+1/2,-z;-x,-y,-z;x-1/2,-y-1/2,z": ['Monoclinic', 'P 21/a'],
-              "x,y,z;-x,y,-z+1/2;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x,-y,z+1/2;-x+1/2,-y+1/2,-z;x+1/2,-y+1/2,z+1/2": [
-                  'Monoclinic', 'C 2/c'],
-              "x,y,z;-x,y,-z+1/2;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x,-y,z-1/2;-x+1/2,-y+1/2,-z;x+1/2,-y+1/2,z-1/2": [
-                  'Monoclinic', 'C 2/c'],
-              "x,y,z;-x,y,-z;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z": ['Monoclinic', 'C 2'],
-              "x,y,z;x,-y,z+1/2": ['Monoclinic', 'P c'],
-              "x,y,z;-x,y,-z;x+1/2,y+1/2,z+1/2;-x+1/2,y+1/2,-z+1/2": ['Monoclinic', 'I 2'],
-              "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z": ['Orthorhombic', 'P 21 21 21'],
-              "x,y,z;-x+1/2,-y,z+1/2;x+1/2,-y+1/2,-z;-x,y+1/2,-z+1/2": ['Orthorhombic', 'P 21 21 21'],
-              "x,y,z;-x,-y,z;-x+1/2,y+1/2,-z;x+1/2,-y+1/2,-z": ['Orthorhombic', 'P 21 21 21'],
-              "x,y,z;x+1/2,-y+1/2,-z;-x,y+1/2,-z+1/2;-x+1/2,-y,z+1/2": ['Orthorhombic', 'P 21 21 21'],
-              "x,y,z;-x,-y,z+1/2;-x+1/2,y+1/2,z+1/2;x+1/2,-y+1/2,z": ['Orthorhombic', 'P n a 21'],
-              "x,y,z;-x,-y,z+1/2;x+1/2,-y+1/2,z;-x+1/2,y+1/2,z+1/2": ['Orthorhombic', 'P n a 21'],
-              "x,y,z;-x,-y,z+1/2;x+1/2,-y,z;-x+1/2,y,z+1/2": ['Orthorhombic', 'P c a 21'],
-              "x,y,z;x+1/2,-y,-z;x,-y+1/2,z+1/2;x+1/2,y+1/2,-z+1/2": ['Orthorhombic', 'P 21 c n'],
-              "x,y,z;x+1/2,-y,-z;x,y+1/2,-z+1/2;x+1/2,-y+1/2,z+1/2": ['Orthorhombic', 'P 21 n b'],
-              "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z;-x,-y,-z;x+1/2,y,-z+1/2;x,-y+1/2,z+1/2;-x+1/2,y+1/2,z": [
-                  'Orthorhombic', 'P b c a'],
-              "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z;-x,-y,-z;x-1/2,y,-z-1/2;x,-y-1/2,z-1/2;-x-1/2,y-1/2,z": [
-                  'Orthorhombic', 'P b c a'],
-              "x,y,z;x,-y,-z;x,-y+1/2,z+1/2;x,y+1/2,-z+1/2;x+1/2,y+1/2,z;x+1/2,-y+1/2,-z;x+1/2,-y,z+1/2;x+1/2,y,-z+1/2": [
-                  'Orthorhombic', 'C 2 c b'],
-              "x,y,z;-y,x-y,z+1/3;-x+y,-x,z+2/3": ['Trigonal', 'P 31'],
-              "x,y,z;-x,-y,z+1/2;-y,x,z+1/4;y,-x,z+3/4": ['Tetragonal', 'P 43'],
-              "x,y,z;-x+1/2,-y,z+1/2;-y+3/4,x+1/4,z+1/4;y+3/4,-x+3/4,z+3/4;x+1/2,y+1/2,z+1/2;-x+1,-y+1/2,z+1;-y+5/4,x+3/4,z+3/4;y+5/4,-x+5/4,z+5/4;-x,-y,-z;x-1/2,y,-z-1/2;y-3/4,-x-1/4,-z-1/4;-y-3/4,x-3/4,-z-3/4;-x+1/2,-y+1/2,-z+1/2;x,y+1/2,-z;y-1/4,-x+1/4,-z+1/4;-y-1/4,x-1/4,-z-1/4": [
-                  'Tetragonal', 'I 41/a'],
-              }
+# noinspection PyPep8
+Symmetries = {
+    "x,y,z": ['Triclinic', 'P 1'],
+    "x,y,z;-x,-y,-z": ['Triclinic', 'P -1'],
+    "x,y,z;-x,y+1/2,-z": ['Monoclinic', 'P 21'],
+    "x,y,z;-x,y+1/2,-z+1/2;-x,-y,-z;x,-y+1/2,z+1/2": ['Monoclinic', 'P 21/c'],
+    "x,y,z;-x,y+1/2,-z+1/2;-x,-y,-z;x,-y-1/2,z-1/2": ['Monoclinic', 'P 21/c'],
+    "x,y,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x-1/2,-y-1/2,z-1/2": ['Monoclinic', 'P 21/n'],
+    "x,y,z;x+1/2,-y+1/2,z+1/2;-x,-y,-z;-x-1/2,y-1/2,-z-1/2": ['Monoclinic', 'P 21/n'],
+    "x,y,z;-x+1/2,y+1/2,-z;-x,-y,-z;x-1/2,-y-1/2,z": ['Monoclinic', 'P 21/a'],
+    "x,y,z;-x,y,-z+1/2;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x,-y,z+1/2;-x+1/2,-y+1/2,-z;x+1/2,-y+1/2,z+1/2": [
+      'Monoclinic', 'C 2/c'],
+    "x,y,z;-x,y,-z+1/2;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z+1/2;-x,-y,-z;x,-y,z-1/2;-x+1/2,-y+1/2,-z;x+1/2,-y+1/2,z-1/2": [
+      'Monoclinic', 'C 2/c'],
+    "x,y,z;-x,y,-z;x+1/2,y+1/2,z;-x+1/2,y+1/2,-z": ['Monoclinic', 'C 2'],
+    "x,y,z;x,-y,z+1/2": ['Monoclinic', 'P c'],
+    "x,y,z;-x,y,-z;x+1/2,y+1/2,z+1/2;-x+1/2,y+1/2,-z+1/2": ['Monoclinic', 'I 2'],
+    "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z": ['Orthorhombic', 'P 21 21 21'],
+    "x,y,z;-x+1/2,-y,z+1/2;x+1/2,-y+1/2,-z;-x,y+1/2,-z+1/2": ['Orthorhombic', 'P 21 21 21'],
+    "x,y,z;-x,-y,z;-x+1/2,y+1/2,-z;x+1/2,-y+1/2,-z": ['Orthorhombic', 'P 21 21 21'],
+    "x,y,z;x+1/2,-y+1/2,-z;-x,y+1/2,-z+1/2;-x+1/2,-y,z+1/2": ['Orthorhombic', 'P 21 21 21'],
+    "x,y,z;-x,-y,z+1/2;-x+1/2,y+1/2,z+1/2;x+1/2,-y+1/2,z": ['Orthorhombic', 'P n a 21'],
+    "x,y,z;-x,-y,z+1/2;x+1/2,-y+1/2,z;-x+1/2,y+1/2,z+1/2": ['Orthorhombic', 'P n a 21'],
+    "x,y,z;-x,-y,z+1/2;x+1/2,-y,z;-x+1/2,y,z+1/2": ['Orthorhombic', 'P c a 21'],
+    "x,y,z;x+1/2,-y,-z;x,-y+1/2,z+1/2;x+1/2,y+1/2,-z+1/2": ['Orthorhombic', 'P 21 c n'],
+    "x,y,z;x+1/2,-y,-z;x,y+1/2,-z+1/2;x+1/2,-y+1/2,z+1/2": ['Orthorhombic', 'P 21 n b'],
+    "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z;-x,-y,-z;x+1/2,y,-z+1/2;x,-y+1/2,z+1/2;-x+1/2,y+1/2,z": [
+      'Orthorhombic', 'P b c a'],
+    "x,y,z;-x+1/2,-y,z+1/2;-x,y+1/2,-z+1/2;x+1/2,-y+1/2,-z;-x,-y,-z;x-1/2,y,-z-1/2;x,-y-1/2,z-1/2;-x-1/2,y-1/2,z": [
+      'Orthorhombic', 'P b c a'],
+    "x,y,z;x,-y,-z;x,-y+1/2,z+1/2;x,y+1/2,-z+1/2;x+1/2,y+1/2,z;x+1/2,-y+1/2,-z;x+1/2,-y,z+1/2;x+1/2,y,-z+1/2": [
+      'Orthorhombic', 'C 2 c b'],
+    "x,y,z;-y,x-y,z+1/3;-x+y,-x,z+2/3": ['Trigonal', 'P 31'],
+    "x,y,z;-x,-y,z+1/2;-y,x,z+1/4;y,-x,z+3/4": ['Tetragonal', 'P 43'],
+    "x,y,z;-x+1/2,-y,z+1/2;-y+3/4,x+1/4,z+1/4;y+3/4,-x+3/4,z+3/4;x+1/2,y+1/2,z+1/2;-x+1,-y+1/2,z+1;-y+5/4,x+3/4,z+3/4;y+5/4,-x+5/4,z+5/4;-x,-y,-z;x-1/2,y,-z-1/2;y-3/4,-x-1/4,-z-1/4;-y-3/4,x-3/4,-z-3/4;-x+1/2,-y+1/2,-z+1/2;x,y+1/2,-z;y-1/4,-x+1/4,-z+1/4;-y-1/4,x-1/4,-z-1/4": [
+      'Tetragonal', 'I 41/a'],
+}
 
 # Atomic molecular weight taken from the MPQC program : http://www.mpqc.org
 AtomicWeight = {
@@ -79,57 +84,60 @@ AtomicWeight = {
     'Zr': 91.22
 }
 
-NeededForRST = {"_chemical_name_common": "Name of the molecule",
-                "_symmetry_cell_setting": "Cell setting",
-                "_symmetry_space_group_name_H-M": "Space group",
-                "_cell_length_a": "Length a (Е)",
-                "_cell_length_b": "Length b (Е)",
-                "_cell_length_c": "Length c (Е)",
-                "_cell_angle_alpha": "Angle alpha (°)",
-                "_cell_angle_beta": "Angle beta (°)",
-                "_cell_angle_gamma": "Angle gamma (°)",
-                "_chemical_formula_moiety": "Chemical formula",
-                "_chemical_formula_weight": "Molecular weight",
-                "_diffrn_ambient_temperature": "Temperature (K)",
-                "_diffrn_radiation_wavelength": "Wavelength (Е)",
-                "_diffrn_radiation_type": "X-Ray source",
-                "_diffrn_radiation_monochromator": "Monochromator",
-                "_cell_formula_units_Z": "Molecule per cell (Z)",
-                "_exptl_crystal_density_diffrn": "Density (Mg/mі)",
-                "_diffrn_reflns_number": "Total number of reflexions",
-                "_reflns_number_total": "Total number of UNIC reflexions",
-                #            "_refine_ls_R_factor_gt":"R factor",
-                #            "_computing_data_collection":"Data collection",
-                "_diffrn_measurement_device_type": "Diffractometer",
-                "_exptl_special_details": "Experimental details",
-                "_cell_volume": "Cell volume (Еі)",
-                "_exptl_crystal_F_000": "F(000) (effective number of electrons)",
-                "_diffrn_reflns_theta_min": "Theta min (°)",
-                "_diffrn_reflns_theta_max": "Theta max (°)",
-                "_diffrn_reflns_limit_h_min": "Minimal h indice",
-                "_diffrn_reflns_limit_h_max": "Maximal h indice",
-                "_diffrn_reflns_limit_k_min": "Minimal k indice",
-                "_diffrn_reflns_limit_k_max": "Maximal k indice",
-                "_diffrn_reflns_limit_l_min": "Minimal l indice",
-                "_diffrn_reflns_limit_l_max": "Maximal l indice",
-                "_diffrn_reflns_av_R_equivalents": "Average Residual for each reflection class",
-                "_diffrn_measured_fraction_theta_max": "Completeness to theta_max",
-                "_refine_ls_number_reflns": "Number of reflexions",
-                "_refine_ls_number_parameters": "Number of parameters",
-                "_refine_ls_number_restraints": "Number of restraints",
-                "_refine_ls_goodness_of_fit_ref": "Goodness of fit",
-                "_refine_ls_R_factor_gt": "R factor on intense reflections",
-                "_refine_ls_R_factor_all": "R factor on all reflections",
-                "_refine_ls_wR_factor_ref": "Weighted R factor on all reflections",
-                "_refine_ls_wR_factor_gt": "Weighted R factor on intense reflections",
-                "_refine_ls_abs_structure_Flack": "Absolute Structure parameter",
-                #            "_refine_ls_extinction_coef":"Extinction coefficient.",
-                "_refine_diff_density_max": "Largest electron density peak (e/Еі)",
-                "_refine_diff_density_min": "Deepest electron density hole (e/Еі)",
-                "_exptl_absorpt_coefficient_mu": "Absorption coefficient",
-                }
+NeededForRST = {
+    "_chemical_name_common": "Name of the molecule",
+    "_symmetry_cell_setting": "Cell setting",
+    "_symmetry_space_group_name_H-M": "Space group",
+    "_cell_length_a": "Length a (Е)",
+    "_cell_length_b": "Length b (Е)",
+    "_cell_length_c": "Length c (Е)",
+    "_cell_angle_alpha": "Angle alpha (°)",
+    "_cell_angle_beta": "Angle beta (°)",
+    "_cell_angle_gamma": "Angle gamma (°)",
+    "_chemical_formula_moiety": "Chemical formula",
+    "_chemical_formula_weight": "Molecular weight",
+    "_diffrn_ambient_temperature": "Temperature (K)",
+    "_diffrn_radiation_wavelength": "Wavelength (Е)",
+    "_diffrn_radiation_type": "X-Ray source",
+    "_diffrn_radiation_monochromator": "Monochromator",
+    "_cell_formula_units_Z": "Molecule per cell (Z)",
+    "_exptl_crystal_density_diffrn": "Density (Mg/mі)",
+    "_diffrn_reflns_number": "Total number of reflexions",
+    "_reflns_number_total": "Total number of UNIC reflexions",
+    #            "_refine_ls_R_factor_gt":"R factor",
+    #            "_computing_data_collection":"Data collection",
+    "_diffrn_measurement_device_type": "Diffractometer",
+    "_exptl_special_details": "Experimental details",
+    "_cell_volume": "Cell volume (Еі)",
+    "_exptl_crystal_F_000": "F(000) (effective number of electrons)",
+    "_diffrn_reflns_theta_min": "Theta min (°)",
+    "_diffrn_reflns_theta_max": "Theta max (°)",
+    "_diffrn_reflns_limit_h_min": "Minimal h indice",
+    "_diffrn_reflns_limit_h_max": "Maximal h indice",
+    "_diffrn_reflns_limit_k_min": "Minimal k indice",
+    "_diffrn_reflns_limit_k_max": "Maximal k indice",
+    "_diffrn_reflns_limit_l_min": "Minimal l indice",
+    "_diffrn_reflns_limit_l_max": "Maximal l indice",
+    "_diffrn_reflns_av_R_equivalents":
+        "Average Residual for each reflection class",
+    "_diffrn_measured_fraction_theta_max": "Completeness to theta_max",
+    "_refine_ls_number_reflns": "Number of reflexions",
+    "_refine_ls_number_parameters": "Number of parameters",
+    "_refine_ls_number_restraints": "Number of restraints",
+    "_refine_ls_goodness_of_fit_ref": "Goodness of fit",
+    "_refine_ls_R_factor_gt": "R factor on intense reflections",
+    "_refine_ls_R_factor_all": "R factor on all reflections",
+    "_refine_ls_wR_factor_ref": "Weighted R factor on all reflections",
+    "_refine_ls_wR_factor_gt": "Weighted R factor on intense reflections",
+    "_refine_ls_abs_structure_Flack": "Absolute Structure parameter",
+    #            "_refine_ls_extinction_coef":"Extinction coefficient.",
+    "_refine_diff_density_max": "Largest electron density peak (e/Еі)",
+    "_refine_diff_density_min": "Deepest electron density hole (e/Еі)",
+    "_exptl_absorpt_coefficient_mu": "Absorption coefficient",
+}
 
-NeededForCSD = {  # "_database_code_CSD":"Database Code", #by another way
+NeededForCSD = {
+    #  "_database_code_CSD":"Database Code", #by another way
     "_publ_author_name": "Author",
     "_symmetry_cell_setting": "Cell setting",
     "_symmetry_space_group_name_H-M": "Space group",
@@ -151,52 +159,57 @@ NeededForCSD = {  # "_database_code_CSD":"Database Code", #by another way
     "_publ_section_comment": "Other comments"
 }
 
-UpperKey = ['_atom_site_B_iso_or_equiv', '_symmetry_space_group_name_Hall',
-            '_atom_site_Cartn_x', '_atom_site_Cartn_y', '_atom_site_Cartn_z', '_atom_site_U_iso_or_equiv',
-            '_atom_site_Wyckoff_symbol', '_atom_site_aniso_B_11', '_atom_site_aniso_B_12', '_atom_site_aniso_B_13',
-            '_atom_site_aniso_B_22', '_atom_site_aniso_B_23', '_atom_site_aniso_B_33', '_atom_site_aniso_U_11',
-            '_atom_site_aniso_U_12', '_atom_site_aniso_U_13', '_atom_site_aniso_U_22', '_atom_site_aniso_U_23',
-            '_atom_site_aniso_U_33', '_atom_sites_Cartn_tran_matrix_11', '_atom_sites_Cartn_tran_matrix_12',
-            '_atom_sites_Cartn_tran_matrix_13',
-            '_atom_sites_Cartn_tran_matrix_21', '_atom_sites_Cartn_tran_matrix_22', '_atom_sites_Cartn_tran_matrix_23',
-            '_atom_sites_Cartn_tran_matrix_31',
-            '_atom_sites_Cartn_tran_matrix_32', '_atom_sites_Cartn_tran_matrix_33', '_atom_sites_Cartn_transform_axes',
-            '_atom_type_scat_Cromer_Mann_a1',
-            '_atom_type_scat_Cromer_Mann_a2', '_atom_type_scat_Cromer_Mann_a3', '_atom_type_scat_Cromer_Mann_a4',
-            '_atom_type_scat_Cromer_Mann_b1',
-            '_atom_type_scat_Cromer_Mann_b2', '_atom_type_scat_Cromer_Mann_b3', '_atom_type_scat_Cromer_Mann_b4',
-            '_atom_type_scat_Cromer_Mann_c',
-            '_cell_formula_units_Z', '_chemical_conn_atom_NCA', '_chemical_conn_atom_NH', '_database_code_CAS',
-            '_database_code_CSD', '_database_code_ICSD', '_database_code_MDF', '_database_code_NBS',
-            '_database_code_PDF', '_database_journal_ASTM', '_database_journal_CSD', '_diffrn_orient_matrix_UB_11',
-            '_diffrn_orient_matrix_UB_12', '_diffrn_orient_matrix_UB_13', '_diffrn_orient_matrix_UB_21',
-            '_diffrn_orient_matrix_UB_22',
-            '_diffrn_orient_matrix_UB_23', '_diffrn_orient_matrix_UB_31', '_diffrn_orient_matrix_UB_32',
-            '_diffrn_orient_matrix_UB_33',
-            '_diffrn_reflns_av_R_equivalents', '_diffrn_reflns_av_sigmaI/netI', '_exptl_absorpt_correction_T_max',
-            '_exptl_absorpt_correction_T_min',
-            '_exptl_crystal_F_000', '_geom_hbond_angle_DHA', '_geom_hbond_atom_site_label_A',
-            '_geom_hbond_atom_site_label_D',
-            '_geom_hbond_atom_site_label_H', '_geom_hbond_distance_DA', '_geom_hbond_distance_DH',
-            '_geom_hbond_distance_HA',
-            '_geom_hbond_site_symmetry_A', '_geom_hbond_site_symmetry_D', '_geom_hbond_site_symmetry_H',
-            '_journal_coden_ASTM',
-            '_journal_coden_Cambridge', '_refine_ls_R_factor_all', '_refine_ls_R_factor_gt', '_refine_ls_R_factor_obs',
-            '_refine_ls_abs_structure_Flack', '_refine_ls_abs_structure_Rogers', '_refine_ls_restrained_S_all',
-            '_refine_ls_restrained_S_obs',
-            '_refine_ls_wR_factor_all', '_refine_ls_wR_factor_gt', '_refine_ls_wR_factor_obs',
-            '_refine_ls_wR_factor_ref',
-            '_refln_A_calc', '_refln_A_meas', '_refln_B_calc', '_refln_B_meas',
-            '_refln_F-squared_meas', '_refln_F_calc', '_refln_F_meas', '_refln_F_sigma',
-            '_refln_F_squared_calc', '_refln_F_squared_sigma', '_reflns_scale_meas_F', '_reflns_scale_meas_F_squared',
-            '', ','',', '_space_group_IT_number', '_space_group_name_H-M',
-            '_space_group_name_H-M_alt', '_space_group_name_Hall', '_symmetry_Int_Tables_number',
-            '_symmetry_space_group_name_H-M',
-            ]
+# noinspection PyPep8
+UpperKey = [
+    '_atom_site_B_iso_or_equiv', '_symmetry_space_group_name_Hall',
+    '_atom_site_Cartn_x', '_atom_site_Cartn_y', '_atom_site_Cartn_z', '_atom_site_U_iso_or_equiv',
+    '_atom_site_Wyckoff_symbol', '_atom_site_aniso_B_11', '_atom_site_aniso_B_12', '_atom_site_aniso_B_13',
+    '_atom_site_aniso_B_22', '_atom_site_aniso_B_23', '_atom_site_aniso_B_33', '_atom_site_aniso_U_11',
+    '_atom_site_aniso_U_12', '_atom_site_aniso_U_13', '_atom_site_aniso_U_22', '_atom_site_aniso_U_23',
+    '_atom_site_aniso_U_33', '_atom_sites_Cartn_tran_matrix_11', '_atom_sites_Cartn_tran_matrix_12',
+    '_atom_sites_Cartn_tran_matrix_13',
+    '_atom_sites_Cartn_tran_matrix_21', '_atom_sites_Cartn_tran_matrix_22', '_atom_sites_Cartn_tran_matrix_23',
+    '_atom_sites_Cartn_tran_matrix_31',
+    '_atom_sites_Cartn_tran_matrix_32', '_atom_sites_Cartn_tran_matrix_33', '_atom_sites_Cartn_transform_axes',
+    '_atom_type_scat_Cromer_Mann_a1',
+    '_atom_type_scat_Cromer_Mann_a2', '_atom_type_scat_Cromer_Mann_a3', '_atom_type_scat_Cromer_Mann_a4',
+    '_atom_type_scat_Cromer_Mann_b1',
+    '_atom_type_scat_Cromer_Mann_b2', '_atom_type_scat_Cromer_Mann_b3', '_atom_type_scat_Cromer_Mann_b4',
+    '_atom_type_scat_Cromer_Mann_c',
+    '_cell_formula_units_Z', '_chemical_conn_atom_NCA', '_chemical_conn_atom_NH', '_database_code_CAS',
+    '_database_code_CSD', '_database_code_ICSD', '_database_code_MDF', '_database_code_NBS',
+    '_database_code_PDF', '_database_journal_ASTM', '_database_journal_CSD', '_diffrn_orient_matrix_UB_11',
+    '_diffrn_orient_matrix_UB_12', '_diffrn_orient_matrix_UB_13', '_diffrn_orient_matrix_UB_21',
+    '_diffrn_orient_matrix_UB_22',
+    '_diffrn_orient_matrix_UB_23', '_diffrn_orient_matrix_UB_31', '_diffrn_orient_matrix_UB_32',
+    '_diffrn_orient_matrix_UB_33',
+    '_diffrn_reflns_av_R_equivalents', '_diffrn_reflns_av_sigmaI/netI', '_exptl_absorpt_correction_T_max',
+    '_exptl_absorpt_correction_T_min',
+    '_exptl_crystal_F_000', '_geom_hbond_angle_DHA', '_geom_hbond_atom_site_label_A',
+    '_geom_hbond_atom_site_label_D',
+    '_geom_hbond_atom_site_label_H', '_geom_hbond_distance_DA', '_geom_hbond_distance_DH',
+    '_geom_hbond_distance_HA',
+    '_geom_hbond_site_symmetry_A', '_geom_hbond_site_symmetry_D', '_geom_hbond_site_symmetry_H',
+    '_journal_coden_ASTM',
+    '_journal_coden_Cambridge', '_refine_ls_R_factor_all', '_refine_ls_R_factor_gt', '_refine_ls_R_factor_obs',
+    '_refine_ls_abs_structure_Flack', '_refine_ls_abs_structure_Rogers', '_refine_ls_restrained_S_all',
+    '_refine_ls_restrained_S_obs',
+    '_refine_ls_wR_factor_all', '_refine_ls_wR_factor_gt', '_refine_ls_wR_factor_obs',
+    '_refine_ls_wR_factor_ref',
+    '_refln_A_calc', '_refln_A_meas', '_refln_B_calc', '_refln_B_meas',
+    '_refln_F-squared_meas', '_refln_F_calc', '_refln_F_meas', '_refln_F_sigma',
+    '_refln_F_squared_calc', '_refln_F_squared_sigma', '_reflns_scale_meas_F', '_reflns_scale_meas_F_squared',
+    '', ','',', '_space_group_IT_number', '_space_group_name_H-M',
+    '_space_group_name_H-M_alt', '_space_group_name_Hall', '_symmetry_Int_Tables_number',
+    '_symmetry_space_group_name_H-M',
+]
 
 DefaultAuthor = "J. Kieffer"
-Version = [" Generated by libcif.py : June 2005", " Written by Jerome Kieffer : Jerome.Kieffer@terre-adelie.org ",
-           " X-Ray Crystallography ", " (France)"]
+Version = [
+    " Generated by libcif.py : June 2005",
+    " Written by Jerome Kieffer : Jerome.Kieffer@terre-adelie.org ",
+    " X-Ray Crystallography ", " (France)"
+]
 
 
 EOL = ["\r", "\n", "\r\n", "\n\r"]
@@ -216,7 +229,8 @@ for m_i in ["\"", "\'"]:
 
 def _old_div(a, b):
     """
-    Equivalent to ``a / b`` on Python 2 without ``from __future__ import division``.
+    Equivalent to ``a / b`` on Python 2
+    without ``from __future__ import division``.
     TODO: generalize this to other objects (like arrays etc.)
     """
     import numbers
@@ -233,7 +247,9 @@ def LoadCIF(filename):
     @return: the CIF object corresponding to the Xtal structure
     @rtype: dictionary"""
     cif = parsecif(readcif(filename))
-    # this corrects a bug that has existed for a long time about the case of the cif-keys: we just transform all the lowercase field in conventional writing
+    # this corrects a bug that has existed for a long time about the case of
+    # the cif-keys: we just transform all the lowercase field in
+    # conventional writing
     keys = {}
     for i in UpperKey:
         keys[i.lower()] = i
@@ -257,7 +273,8 @@ def readcif(filename):
     @param filename: the name of the CIF file
     @type filename: string
     @return: a string containing the raw data
-    @rtype: string"""
+    @rtype: string
+    """
     if not os.path.isfile(filename):
         raise Exception("I cannot find the file %s" % filename)
     f = open(filename, "r").readlines()
@@ -267,11 +284,13 @@ def readcif(filename):
         if pos >= 0:
             text += ligne[:pos] + "\n"
             if pos > 80:
-                print("Warning, this line is too long and could cause problems in PreQuest\n", ligne)
+                print(('Warning, this line is too long and could'
+                       ' cause problems in PreQuest\n'), ligne)
         else:
             text += ligne
             if len(ligne.strip()) > 80:
-                print("Warning, this line is too long and could cause problems in PreQuest\n", ligne)
+                print(('Warning, this line is too long and could'
+                       ' cause problems in PreQuest\n'), ligne)
     return text
 
 
@@ -281,8 +300,9 @@ def oneloop(fields, start):
     @type fields: list
     @param start: the starting index corresponding to the "loop_" key
     @type start: integer
-    @return: the list of loop dictionaries, the length of the data extracted from the fields and the list of all the keys of the loop.
-    @rtype: tupple
+    @return: the list of loop dictionaries, the length of the data extracted
+             from the fields and the list of all the keys of the loop.
+    @rtype: tuple
     """
     #    in earch loop we first search the length of the loop
     loop = []
@@ -446,9 +466,9 @@ def splitcif(text):
     return fields
 
 
-#############################################################################################
-########     everything needed to  write a cif file #########################################
-#############################################################################################
+################################################################################
+########     everything needed to  write a cif file ############################
+################################################################################
 
 def SaveCIF(cif, filename="test.cif"):
     """transforms the CIF object in string and write it into the given file"""
@@ -457,7 +477,7 @@ def SaveCIF(cif, filename="test.cif"):
         f = open(filename, "w")
         f.write(txt)
         f.close()
-    except:
+    except Exception:
         raise Exception("Error during the writing of this file : %s" % filename)
 
 
@@ -478,7 +498,8 @@ def cif2str(cif):
     keys = list(cif.keys())
     keys.sort()
     for i in keys:
-        if i == "loop_": continue
+        if i == "loop_":
+            continue
         value = cif[i]
         if value.find("\n") > -1:  # should add value  between ;;
             ligne = "%s \n;\n %s \n;\n" % (i, value)
@@ -507,7 +528,8 @@ def cif2str(cif):
                         txt += ligne
                         ligne = ""
                     else:
-                        if len(rawvalue.split()) > 1:  # should add value between ''
+                        if len(rawvalue.split()) > 1:
+                            # should add value between ''
                             value = "'%s'" % rawvalue
                         else:
                             value = rawvalue
@@ -521,9 +543,9 @@ def cif2str(cif):
     return txt
 
 
-################################################################################################
-#########         few  calculation  on  the  structure                                    ######
-################################################################################################
+################################################################################
+#########         few  calculation  on  the  structure                   #######
+################################################################################
 
 def CheckSym(cif, fix=False):
     """
@@ -539,24 +561,35 @@ def CheckSym(cif, fix=False):
     if len(so) == 0:
         warning += "Warning : no symmetry operation detected\n"
     elif so not in Symmetries:
-        warning += "Warning : the symmetry exists but is not defined in the program, please check the data and the program\n%s\n" % so
+        warning += (
+                       'Warning : the symmetry exists but is not defined in the'
+                       ' program, please check the data and the program\n%s\n'
+                   ) % so
     else:
         [cell, sg] = Symmetries[so]
         if "_symmetry_cell_setting" in cif:
             if cell.lower() != cif["_symmetry_cell_setting"].lower():
-                warning += "Warning : I found a %s cell where it is set to %s. \n" % (
-                    cell, cif["_symmetry_cell_setting"])
+                warning += ('Warning : I found a %s cell where it is'
+                            ' set to %s. \n') % (
+                    cell, cif["_symmetry_cell_setting"]
+                )
                 cif["_symmetry_cell_setting"] = cell
         else:
-            warning += "Warning : The symmetry of the cell is not set but I think it is %s.\n" % cell
+            warning += (
+                'Warning : The symmetry of the cell is not set but'
+                ' I think it is %s.\n'
+            ) % cell
             cif["_symmetry_cell_setting"] = cell
         if "_symmetry_space_group_name_H-M" in cif:
             if sg.lower() != cif["_symmetry_space_group_name_H-M"].lower():
-                warning += "Warning : I found a %s space group where it is set to %s. \n" % (
-                    sg, cif["_symmetry_space_group_name_H-M"])
+                warning += ('Warning : I found a %s space group where it is'
+                            ' set to %s. \n') % (
+                    sg, cif["_symmetry_space_group_name_H-M"]
+                )
                 cif["_symmetry_space_group_name_H-M"] = sg
         else:
-            warning += "Warning : The Space Group is not set but I think it is %s.\n" % sg
+            warning += ('Warning : The Space Group is '
+                        'not set but I think it is %s.\n') % sg
             cif["_symmetry_space_group_name_H-M"] = sg
     if fix:
         return warning, cif
@@ -575,7 +608,8 @@ def symop(cif):
     for loop in cif["loop_"]:
         for key in loop[0]:
             if key == "_symmetry_equiv_pos_as_xyz":
-                for i in loop[1]: txt += (i["_symmetry_equiv_pos_as_xyz"] + ";")
+                for i in loop[1]:
+                    txt += (i["_symmetry_equiv_pos_as_xyz"] + ";")
     txt2, count = re.subn(" ", "", txt[:-1])
     txt3, count = re.subn(";+", ";", txt2.lower())
     txt, count = re.subn(",+", ",", txt3)
@@ -628,14 +662,15 @@ def exists(cif, key):
     is_found = False
     if key in cif:
         if len(cif[key]) >= 1:
-            if cif[key][0] != "?": is_found = True
+            if cif[key][0] != "?":
+                is_found = True
     return is_found
 
 
 def CellVol(cif):
     """calculate the cell volume and return it as a real (in Еі)"""
-    needed = ["_cell_length_a", "_cell_length_b", "_cell_length_c", "_cell_angle_alpha",
-              "_cell_angle_beta", "_cell_angle_gamma"]
+    needed = ["_cell_length_a", "_cell_length_b", "_cell_length_c",
+              "_cell_angle_alpha", "_cell_angle_beta", "_cell_angle_gamma"]
     for i in needed:
         if not exists(cif, i):
             return 0
@@ -646,11 +681,15 @@ def CellVol(cif):
     ca = math.cos(math.pi / 180 * floatp(cif["_cell_angle_alpha"]))
     cb = math.cos(math.pi / 180 * floatp(cif["_cell_angle_beta"]))
     cc = math.cos(math.pi / 180 * floatp(cif["_cell_angle_gamma"]))
-    return a * b * c * math.sqrt(1 - ca * ca - cb * cb - cc * cc + 2 * ca * cb * cc)
+    return a * b * c * \
+        math.sqrt(1 - ca * ca - cb * cb - cc * cc + 2 * ca * cb * cc)
 
 
 def Zprime(cif):
-    """Calculate Z' = Z/nop if the latice is primitive zp=2*Z/nop if the latice is centered ..."""
+    """
+    Calculate Z' = Z/nop if the latice is
+    primitive zp=2*Z/nop if the latice is centered ...
+    """
     zp = float(cif["_cell_formula_units_Z"]) / len(symop(cif).split(";"))
     return str(int(zp))
 
@@ -658,7 +697,10 @@ def Zprime(cif):
 # cif["_cell_formula_units_Z"]=str(zp*len(symop(cif).split(";")))
 
 def MolForm(cif, zp):
-    """count the atoms and returns the  molecular formula. Zp is the number of molecule per asymmetric cell"""
+    """
+    count the atoms and returns the  molecular formula.
+    Zp is the number of molecule per asymmetric cell
+    """
     form = {}
     for loop in cif["loop_"]:
         for key in loop[0]:
@@ -667,7 +709,7 @@ def MolForm(cif, zp):
                     atom = i["_atom_site_type_symbol"]
                     try:
                         occ = i["_atom_site_occupancy"]
-                    except:
+                    except Exception:
                         occ = "1"
                     if atom in list(form.keys()):
                         form[atom] += floatp(occ)
@@ -678,12 +720,12 @@ def MolForm(cif, zp):
     try:
         keys.remove("H")
         keys = ["H"] + keys
-    except:
+    except Exception:
         pass
     try:
         keys.remove("C")
         keys = ["C"] + keys
-    except:
+    except Exception:
         pass
     txt = ""
     for i in keys:
@@ -696,7 +738,7 @@ def MolForm(cif, zp):
 
 def MolWeight(formula):
     """calculate the molecular weight of a compound using its formula"""
-    MW = 0
+    molecule_weight = 0
     for sub in formula.split():
         j = sub.strip()
         atom = ""
@@ -712,22 +754,28 @@ def MolWeight(formula):
                 x = 1
             else:
                 x = floatp(count)
-            MW += AtomicWeight[atom] * x
+            molecule_weight += AtomicWeight[atom] * x
         else:
-            print("WARNING !!! the program is lacking the molecular weight of " + atom)
-    return MW
+            print(('WARNING !!! the program is lacking'
+                   ' the molecular weight of %s') % atom)
+    return molecule_weight
 
 
 def Density(cif):
-    """calculate the density in Mg/mі, for information : 10^30/Na/10^6=1.66054018667"""
-    MW = floatp(cif["_chemical_formula_weight"])
+    """
+    calculate the density in Mg/mі,
+    for information : 10^30/Na/10^6=1.66054018667
+    """
+    molecule_weight = floatp(cif["_chemical_formula_weight"])
     cell = floatp(cif["_cell_volume"])
-    Z = int(cif["_cell_formula_units_Z"])
-    return 1.66054018667 * MW * Z / cell
+    z = int(cif["_cell_formula_units_Z"])
+    return 1.66054018667 * molecule_weight * z / cell
 
 
 def AsymmetricCellContents(cif):
-    """tries to find the contents of the asymmetric cell """
+    """
+    tries to find the contents of the asymmetric cell
+    """
     txt = ""
     if exists(cif, "_chemical_formula_moiety"):
         txt = cif["_chemical_formula_moiety"]
@@ -736,10 +784,15 @@ def AsymmetricCellContents(cif):
 
 
 def CheckForRST(cif):
-    """check in the CIF data if all the data needed to generate a RST report are present.
-    If not it will ask many annoying questions"""
-    if exists(cif, "_computing_data_collection") and not exists(cif, "_diffrn_measurement_device_type"):
-        cif["_diffrn_measurement_device_type"] = cif["_computing_data_collection"]
+    """
+    check in the CIF data if all the data needed to generate a RST report
+    are present. If not it will ask many annoying questions
+    """
+    if exists(cif, "_computing_data_collection") \
+       and not exists(cif, "_diffrn_measurement_device_type"):
+        cif["_diffrn_measurement_device_type"] = cif[
+            "_computing_data_collection"
+        ]
     table = list(NeededForRST.keys())
     table.sort()
     modified = False
@@ -747,19 +800,26 @@ def CheckForRST(cif):
         if not exists(cif, key):
             modified = True
             txt = eval(input(" %s ? (%s) -->" % (NeededForRST[key], key)))
-            if len(txt) == 0: txt = "?"
+            if len(txt) == 0:
+                txt = "?"
             cif[key] = txt
     return cif, modified
 
 
 def CheckForCSD(cif, name="None"):
-    """check in the CIF data if all the data needed to generate a RST report are present.
-    If not it will ask many annoying questions"""
-    if name[-4:].lower() == ".cif": name = name[:-4]
+    """
+    check in the CIF data if all the data needed to generate a
+    RST report are present. If not it will ask many annoying questions
+    """
+    if name[-4:].lower() == ".cif":
+        name = name[:-4]
     modified = False
-    if not exists(cif, "_diffrn_ambient_temperature") and exists(cif, "_cell_measurement_temperature"):
+    if not exists(cif, "_diffrn_ambient_temperature")\
+       and exists(cif, "_cell_measurement_temperature"):
         modified = True
-        cif["_diffrn_ambient_temperature"] = cif["_cell_measurement_temperature"]
+        cif["_diffrn_ambient_temperature"] = cif[
+            "_cell_measurement_temperature"
+        ]
     if not exists(cif, "_cell_volume"):
         vol = CellVol(cif)
         if vol > 1:
@@ -770,15 +830,20 @@ def CheckForCSD(cif, name="None"):
         txt = eval(input(" Number of molecules per asymmetric cell ? (Z') -->"))
         try:
             zp = int(txt)
-        except:
+        except Exception:
             zp = 1
         cif["_cell_formula_units_Z"] = str(zp * len(symop(cif).split(";")))
     if not exists(cif, "_chemical_formula_sum"):
-        cif["_chemical_formula_sum"] = MolForm(cif, int(cif["_cell_formula_units_Z"]) / len(symop(cif).split(";")))
+        cif["_chemical_formula_sum"] = MolForm(
+            cif, int(cif["_cell_formula_units_Z"]) / len(symop(cif).split(";"))
+        )
 
     if not exists(cif, "_chemical_formula_moiety"):
         modified = True
-        txt = eval(input(" Chemical formula ? (_chemical_formula_moiety) [%s] -->" % cif["_chemical_formula_sum"]))
+        txt = eval(input(
+            " Chemical formula ? (_chemical_formula_moiety) [%s] -->" %
+            cif["_chemical_formula_sum"]
+        ))
         if txt == "":
             cif["_chemical_formula_moiety"] = cif["_chemical_formula_sum"]
         else:
@@ -786,26 +851,36 @@ def CheckForCSD(cif, name="None"):
 
     if cif["_chemical_formula_moiety"] == "C6 H12 O6":
         modified = True
-        txt = eval(input(" Chemical formula ? (_chemical_formula_moiety) [%s] -->" % cif["_chemical_formula_sum"]))
+        txt = eval(input(
+            " Chemical formula ? (_chemical_formula_moiety) [%s] -->" %
+            cif["_chemical_formula_sum"]
+        ))
         if txt == "":
             cif["_chemical_formula_moiety"] = cif["_chemical_formula_sum"]
         else:
             cif["_chemical_formula_moiety"] = txt.upper().strip()
 
-    if not exists(cif, "_chemical_formula_weight") and exists(cif, "_chemical_formula_sum"):
-        cif["_chemical_formula_weight"] = "%7.2f" % MolWeight(cif["_chemical_formula_sum"])
+    if not exists(cif, "_chemical_formula_weight")\
+       and exists(cif, "_chemical_formula_sum"):
+        cif["_chemical_formula_weight"] = "%7.2f" % MolWeight(
+            cif["_chemical_formula_sum"]
+        )
 
-    if not exists(cif, "_exptl_crystal_density_diffrn") and exists(cif, "_cell_volume") and exists(cif,
-                                                                                                   "_cell_formula_units_Z") and exists(
-        cif, "_chemical_formula_weight"):
+    if not exists(cif, "_exptl_crystal_density_diffrn")\
+       and exists(cif, "_cell_volume")\
+       and exists(cif, "_cell_formula_units_Z")\
+       and exists(cif, "_chemical_formula_weight"):
         cif["_exptl_crystal_density_diffrn"] = "%5.3f" % Density(cif)
 
-    if not exists(cif, "_refine_ls_R_factor_gt") and exists(cif, "_refine_ls_R_factor_obs"):
+    if not exists(cif, "_refine_ls_R_factor_gt")\
+       and exists(cif, "_refine_ls_R_factor_obs"):
         cif["_refine_ls_R_factor_gt"] = cif["_refine_ls_R_factor_obs"]
 
     if not exists(cif, "_publ_author_name"):
         modified = True
-        txt = eval(input(" Author ? (_publ_author_name) [%s] -->" % DefaultAuthor))
+        txt = eval(input(
+            " Author ? (_publ_author_name) [%s] -->" % DefaultAuthor)
+        )
         if txt == "":
             cif["_publ_author_name"] = DefaultAuthor
         else:
@@ -813,20 +888,26 @@ def CheckForCSD(cif, name="None"):
     if not exists(cif, "_journal_coden_Cambridge"):
         cif["_journal_coden_Cambridge"] = "1078"  # CAD "private communication"
     if not exists(cif, "_journal_year"):
-        cif["_journal_year"] = str(time.localtime()[0])  # Publication year needed
+        # Publication year needed
+        cif["_journal_year"] = str(time.localtime()[0])
 
     if not exists(cif, "_chemical_name_systematic"):
         modified = True
-        txt = eval(input(" Chemical name ? (_chemical_name_systematic) [%s] -->" % name))
+        txt = eval(input(
+            " Chemical name ? (_chemical_name_systematic) [%s] -->" % name
+        ))
         if txt == "":
             cif["_chemical_name_systematic"] = name
         else:
             cif["_chemical_name_systematic"] = txt
 
-    if not exists(cif, "_chemical_name_common") and exists(cif, "_chemical_name_systematic"):
+    if not exists(cif, "_chemical_name_common")\
+       and exists(cif, "_chemical_name_systematic"):
         modified = True
-        txt = eval(
-            input(" Chemical name (synonym) ? (_chemical_name_common) [%s] -->" % cif["_chemical_name_systematic"]))
+        txt = eval(input(
+            " Chemical name (synonym) ? (_chemical_name_common) [%s] -->" %
+            cif["_chemical_name_systematic"]
+        ))
         if txt == "":
             cif["_chemical_name_common"] = cif["_chemical_name_systematic"]
         else:
@@ -838,15 +919,16 @@ def CheckForCSD(cif, name="None"):
         if not exists(cif, key):
             modified = True
             txt = eval(input(" %s ? (%s) -->" % (NeededForCSD[key], key)))
-            if len(txt) == 0: txt = "?"
+            if len(txt) == 0:
+                txt = "?"
             cif[key] = txt
 
     return cif, modified
 
 
-######################################################################
-###### Some   P.L.A.T.O.N.  related stuff         ####################
-######################################################################
+################################################################################
+###### Some   P.L.A.T.O.N.  related stuff         ##############################
+################################################################################
 
 def platon(filename):
     """process the data through PLATON
@@ -857,7 +939,8 @@ def platon(filename):
     """
     chiral = []
     if not os.path.isfile(filename):
-        raise "error in the platon procedure : %s filename does not exist" % filename
+        raise Exception(('error in the platon procedure :'
+                         ' %s filename does not exist') % filename)
     i, o = os.popen2("platon -o %s" % filename)
     i.write("TABL CIF\n")
     i.flush()
@@ -874,18 +957,26 @@ def platon(filename):
     cif = LoadCIF(os.path.splitext(filename)[0] + ".acc")
 
     # here we remove the empty loops
-    loops = cif["loop_"][:]  # it is unwise to modify a list used as loop iterator
+    loops = cif["loop_"][:]
+    # it is unwise to modify a list used as loop iterator
     for loop in loops:
         if len(loop[1]) == 1:
             empty = True
             for i in loop[0]:
-                if exists(loop[1][0], i): empty = False
-            if empty: cif["loop_"].remove(loop)
+                if exists(loop[1][0], i):
+                    empty = False
+            if empty:
+                cif["loop_"].remove(loop)
 
     # here we append the information about chirality
     if len(chiral) > 0:
         if exists(cif, "loop_"):
-            cif["loop_"].append([["_atom_site_asymmetry_label", "_atom_site_asymmetry_type"], chiral])
+            cif["loop_"].append(
+                [
+                    ["_atom_site_asymmetry_label", "_atom_site_asymmetry_type"],
+                    chiral
+                ]
+            )
         else:
             cif["loop_"] = [[list(chiral[0].keys()), chiral]]
     return cif
@@ -903,12 +994,16 @@ def merge_platon(cif, acc):
     """
     cif_platon = acc
     # first of all removes the sugar ;)
-    if exists(cif, "_chemical_formula_moiety") and cif["_chemical_formula_moiety"] == "C6 H12 O6":    cif[
-        "_chemical_formula_moiety"] = "?"
-    PassKey = ["_publ_contact_letter", "_publ_requested_journal", "_publ_contact_letter", "_loop",
-               "_publ_section_references", "_publ_section_figure_captions"]
+    if exists(cif, "_chemical_formula_moiety")\
+       and cif["_chemical_formula_moiety"] == "C6 H12 O6":
+        cif["_chemical_formula_moiety"] = "?"
+    pass_key = [
+        "_publ_contact_letter", "_publ_requested_journal",
+        "_publ_contact_letter", "_loop", "_publ_section_references",
+        "_publ_section_figure_captions"
+    ]
     for i in cif_platon:
-        if i in PassKey:
+        if i in pass_key:
             continue
         if (not exists(cif, i)) and exists(cif_platon, i):
             cif[i] = cif_platon[i]
@@ -924,7 +1019,8 @@ def merge_platon(cif, acc):
                 if i in curkeys:
                     c += 1
             #            if c>0 : print curkeys,c,len(l1),len(curkeys)
-            if c == len(l1) or c > round(0.8 * len(curkeys)):  # here we accept if at least 80% is good.
+            if c == len(l1) or c > round(0.8 * len(curkeys)):
+                # here we accept if at least 80% is good.
                 exist = True
                 continue
         if not exist:
@@ -932,16 +1028,19 @@ def merge_platon(cif, acc):
     return cif
 
 
-#########################################################################################
+################################################################################
 
 
-#########################################################################
-###### Everything to write automatically a report #######################
-#########################################################################
+################################################################################
+###### Everything to write automatically a report ##############################
+################################################################################
 
 
 def Html2table(html, BL, X, Y):
-    """    This function appends a table element to the html file with the X and Y headers"""
+    """
+    This function appends a table element to the html file
+    with the X and Y headers
+    """
     html.start("p")
     html.start("table cellspacing=10")
     html.start("tr")
@@ -960,7 +1059,9 @@ def Html2table(html, BL, X, Y):
 
 
 def AtomicCoord(html, table):
-    """    This function appends a table with label, y, y, z and U to the html file"""
+    """
+    This function appends a table with label, y, y, z and U to the html file
+    """
     html.start("p")
     html.start("table cellspacing=10")
     html.start("tr")
@@ -984,7 +1085,8 @@ def AtomicCoord(html, table):
 
 def XraySummary(html, cif):
     """
-    This function appends a table summarizing the Xray analysis, usually in Annexe as table 1
+    This function appends a table summarizing the Xray analysis,
+    usually in Annexe as table 1
     @param html: HTML file represented as an XML-object
     @type html: XML object
     @param cif: The CIF-object of the Xtal structure
@@ -1016,17 +1118,25 @@ def XraySummary(html, cif):
     html.end("tr")
     html.start("tr")
     html.element("td", "Crystal system ; space group")
-    html.element("td", "%s ; %s" % (cif["_symmetry_cell_setting"], cif["_symmetry_space_group_name_H-M"]))
+    html.element("td", "%s ; %s" % (cif["_symmetry_cell_setting"],
+                                    cif["_symmetry_space_group_name_H-M"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Unit cell dimensions")
     html.start("td")
-    html.rawdata("<table><tr><td>a = %s </td><td> &Aring; ; &alpha; = %s °</td></tr>" % (
-        cif["_cell_length_a"], cif["_cell_angle_alpha"]))
-    html.rawdata("<tr><td> b = %s </td><td> &Aring; ;  &beta; = %s °</td></tr>" % (
-        cif["_cell_length_b"], cif["_cell_angle_beta"]))
-    html.rawdata("<tr><td> c = %s </td><td> &Aring; ;  &gamma; = %s °</td></tr></table> " % (
-        cif["_cell_length_c"], cif["_cell_angle_gamma"]))
+    html.rawdata(
+        "<table><tr><td>a = %s </td><td> &Aring; ; &alpha; = %s °</td></tr>" %
+        (cif["_cell_length_a"], cif["_cell_angle_alpha"])
+    )
+    html.rawdata(
+        "<tr><td> b = %s </td><td> &Aring; ;  &beta; = %s °</td></tr>" %
+        (cif["_cell_length_b"], cif["_cell_angle_beta"])
+    )
+    html.rawdata(
+        ('<tr><td> c = %s </td><td> &Aring; ;'
+         '  &gamma; = %s °</td></tr></table> ') %
+        (cif["_cell_length_c"], cif["_cell_angle_gamma"])
+    )
     html.end("td")
     html.end("tr")
     html.start("tr")
@@ -1035,7 +1145,8 @@ def XraySummary(html, cif):
     html.end("tr")
     html.start("tr")
     html.element("td", "Z, Calculated density")
-    html.element("td", "%s, %s Mg/mі" % (cif["_cell_formula_units_Z"], cif["_exptl_crystal_density_diffrn"]))
+    html.element("td", "%s, %s Mg/mі" % (cif["_cell_formula_units_Z"],
+                                          cif["_exptl_crystal_density_diffrn"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Absorption coefficient")
@@ -1047,24 +1158,28 @@ def XraySummary(html, cif):
     html.end("tr")
     html.start("tr")
     html.element("td", "Theta range for data collection")
-    html.element("td", "%s° to %s°" % (cif["_diffrn_reflns_theta_min"], cif["_diffrn_reflns_theta_max"]))
+    html.element("td", "%s° to %s°" % (cif["_diffrn_reflns_theta_min"],
+                                         cif["_diffrn_reflns_theta_max"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Limiting indices")
     html.element("td", "%s <= h <= %s ; %s <= k <= %s ; %s <= l <= %s" % (
-        cif["_diffrn_reflns_limit_h_min"], cif["_diffrn_reflns_limit_h_max"], cif["_diffrn_reflns_limit_k_min"],
-        cif["_diffrn_reflns_limit_k_max"], cif["_diffrn_reflns_limit_l_min"], cif["_diffrn_reflns_limit_l_max"]))
+        cif["_diffrn_reflns_limit_h_min"], cif["_diffrn_reflns_limit_h_max"],
+        cif["_diffrn_reflns_limit_k_min"],
+        cif["_diffrn_reflns_limit_k_max"], cif["_diffrn_reflns_limit_l_min"],
+        cif["_diffrn_reflns_limit_l_max"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Reflexion collected / unique")
     html.element("td", "%s / %s [R(int) = %s]" % (
-        cif["_diffrn_reflns_number"], cif["_reflns_number_total"], cif["_diffrn_reflns_av_R_equivalents"]))
+        cif["_diffrn_reflns_number"], cif["_reflns_number_total"],
+        cif["_diffrn_reflns_av_R_equivalents"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Completeness to theta max")
     try:
         r = float(cif["_diffrn_measured_fraction_theta_max"]) * 100
-    except:
+    except Exception:
         r = 100
     html.element("td", "%s %%" % r)
     html.end("tr")
@@ -1075,7 +1190,8 @@ def XraySummary(html, cif):
     html.start("tr")
     html.element("td", "Data / restraints / parameters")
     html.element("td", "%s / %s / %s" % (
-        cif["_refine_ls_number_reflns"], cif["_refine_ls_number_restraints"], cif["_refine_ls_number_parameters"]))
+        cif["_refine_ls_number_reflns"], cif["_refine_ls_number_restraints"],
+        cif["_refine_ls_number_parameters"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Goodness of fit on FІ")
@@ -1083,11 +1199,13 @@ def XraySummary(html, cif):
     html.end("tr")
     html.start("tr")
     html.element("td", "Final R indices [I>2sigma(I)]")
-    html.element("td", "R1 = %s ; wR2 = %s" % (cif["_refine_ls_R_factor_gt"], cif["_refine_ls_wR_factor_gt"]))
+    html.element("td", "R1 = %s ; wR2 = %s" % (cif["_refine_ls_R_factor_gt"],
+                                               cif["_refine_ls_wR_factor_gt"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Final R indices [all data]")
-    html.element("td", "R1 = %s ; wR2 = %s" % (cif["_refine_ls_R_factor_all"], cif["_refine_ls_wR_factor_ref"]))
+    html.element("td", "R1 = %s ; wR2 = %s" % (cif["_refine_ls_R_factor_all"],
+                                               cif["_refine_ls_wR_factor_ref"]))
     html.end("tr")
     html.start("tr")
     html.element("td", "Absolute structure parameter")
@@ -1099,7 +1217,9 @@ def XraySummary(html, cif):
     #    html.end("tr")
     html.start("tr")
     html.element("td", "Largest diff peak and hole")
-    html.rawdata("<td> %s and %s e/&Aring;і</td>" % (cif["_refine_diff_density_max"], cif["_refine_diff_density_min"]))
+    html.rawdata("<td> %s and %s e/&Aring;і</td>" % (
+        cif["_refine_diff_density_max"], cif["_refine_diff_density_min"])
+                 )
     html.end("tr")
     # &lambda; = %s &Aring;
     html.end("table cellspacing=15")
@@ -1107,19 +1227,23 @@ def XraySummary(html, cif):
 
 
 def WriteReport(filename, cif, Lang="En"):
-    """This function writes out an X-Ray structure report as an HTML file in the given language
-    with the data taken from the CIF dictionary
+    """
+    This function writes out an X-Ray structure report as an HTML file in the
+    given language with the data taken from the CIF dictionary
 
     @param filename: Name of the file (usually .cif or .html)
     @type filename: string
     @param cif: The CIF-object of the Xtal structure
     @type cif: dictionary
-    @param Lang: The language in which the report has to be written, the default is English
+    @param Lang: The language in which the report has to be written,
+    the default is English
     @type Lang: string
     """
     basename = os.path.basename(filename)
-    if filename[-4:].lower() in [".cif", ".htm", ".htl", ".lis"]: basename = filename[:-4]
-    if filename[-5:].lower() == ".html": basename = filename[:-5]
+    if filename[-4:].lower() in [".cif", ".htm", ".htl", ".lis"]:
+        basename = filename[:-4]
+    if filename[-5:].lower() == ".html":
+        basename = filename[:-5]
 
     if not os.path.isdir(basename):
         os.mkdir(basename)
@@ -1139,9 +1263,11 @@ def WriteReport(filename, cif, Lang="En"):
     w.start("head")
 
     if Lang.lower() == "fr":
-        w.element("title", "Rapport de diffraction X du %s \n" % cif["_chemical_name_common"])
+        w.element("title", "Rapport de diffraction X du %s \n" %
+                  cif["_chemical_name_common"])
     elif Lang.lower() in ["en", "us"]:
-        w.element("title", "Report of X-Ray diffraction of %s \n" % cif["_chemical_name_common"])
+        w.element("title", "Report of X-Ray diffraction of %s \n" %
+                  cif["_chemical_name_common"])
     for i in Version:
         w.element("meta", name="generator", value=i)
     w.end("head")
@@ -1154,21 +1280,29 @@ def WriteReport(filename, cif, Lang="En"):
     w.start("center")
     w.element("h2", "Appendix\n")
     w.element("hr", " ")
-    w.element("h3", "Figure 1 : Structural representation of the molecule with atoms labels.")
-    w.rawdata('<img  src="%s-structure.png" border=0 Width="100%%">' % os.path.dirname(basename))
+    w.element("h3", ('Figure 1 : Structural representation of the'
+                     ' molecule with atoms labels.'))
+    w.rawdata('<img  src="%s-structure.png" border=0 Width="100%%">' %
+              os.path.dirname(basename))
     w.element("hr", " ")
-    w.element("h3", "Figure 2 : Ortep representation of the molecule with thermal ellipsoids at 50%.")
-    w.rawdata('<img  src="%s-ADP.png" border=0 Width="100%%">' % os.path.dirname(basename))
+    w.element("h3", ('Figure 2 : Ortep representation of the molecule with'
+                     ' thermal ellipsoids at 50%.'))
+    w.rawdata('<img  src="%s-ADP.png" border=0 Width="100%%">' %
+              os.path.dirname(basename))
     w.element("hr", " ")
-    w.element("h3", "Figure 3 : Simulated powder diffraction pattern from the crystal structure.")
-    w.rawdata('<img  src="%s-powder.png" border=0 Width="100%%">' % os.path.dirname(basename))
+    w.element("h3", ('Figure 3 : Simulated powder diffraction pattern from'
+                     ' the crystal structure.'))
+    w.rawdata('<img  src="%s-powder.png" border=0 Width="100%%">' %
+              os.path.dirname(basename))
     w.element("hr", " ")
     w.element("h3", "Table 1: Crystal data and structure refinement.\n")
     XraySummary(w, cif)
     w.element("hr", " ")
     w.start("h3")
-    w.rawdata("""Table 2: Atomic coordinates (x 10<sup>4</sup>) and equivalent isotropic displacements parameters
-    (&Aring;<sup>2</sup> x 10<sup>3</sup>).<br>U(eq) is defined as one third of the trace of the orthogonalized U<sub>ij</sub> tensor.""")
+    w.rawdata("""Table 2: Atomic coordinates (x 10<sup>4</sup>) and equivalent 
+     isotropic displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).
+    <br>U(eq) is defined as one third of the trace of the orthogonalized
+     U<sub>ij</sub> tensor.""")
     w.end("h3")
     heavy, hydro = AtomPositions(cif)
     AtomicCoord(w, heavy)
@@ -1184,14 +1318,15 @@ def WriteReport(filename, cif, Lang="En"):
     Html2table(w, BondAngle(cif), "Atoms", "Angle (°)")
     w.element("hr", " ")
     w.start("h3")
-    w.rawdata("""Table 5: Hydrogen coordinates (x 10<sup>4</sup>) and isotropic displacements parameters
-    (&Aring;<sup>2</sup> x 10<sup>3</sup>).""")
+    w.rawdata("""Table 5: Hydrogen coordinates (x 10<sup>4</sup>) and isotropic 
+     displacements parameters (&Aring;<sup>2</sup> x 10<sup>3</sup>).""")
     w.end("h3")
     AtomicCoord(w, hydro)
     w.element("hr", " ")
     #####################
     w.start("h3")
-    w.rawdata("""Table 6: Hydrogen bonds with bond lengths (&Aring;ngstrom) and angles (degrees °).""")
+    w.rawdata("""Table 6: Hydrogen bonds with bond lengths (&Aring;ngstrom) and
+     angles (degrees °).""")
     w.end("h3")
 
     w.start("p")
@@ -1209,7 +1344,8 @@ def WriteReport(filename, cif, Lang="En"):
                 w.end("tr")
                 w.start("tr")
                 w.element("td", "%s - %s ... %s" % (
-                    i["_geom_hbond_atom_site_label_D"], i["_geom_hbond_atom_site_label_H"],
+                    i["_geom_hbond_atom_site_label_D"],
+                    i["_geom_hbond_atom_site_label_H"],
                     i["_geom_hbond_atom_site_label_A"]))
                 w.element("td", i["_geom_hbond_distance_DH"])
                 w.element("td", i["_geom_hbond_distance_HA"])
@@ -1224,7 +1360,9 @@ def WriteReport(filename, cif, Lang="En"):
     w.close(html)
     f.close()
     print("Launching Mozilla to view the report")
-    os.system("mozilla file://%s &" % os.path.abspath("./" + basename + ".html"))
+    os.system(
+        "mozilla file://%s &" % os.path.abspath("./" + basename + ".html")
+    )
 
 
 def MainReportEN(html, cif):
@@ -1237,7 +1375,8 @@ def MainReportEN(html, cif):
     @return: None
     """
     html.start("center")
-    html.element("h1", "Determination of the crystal structure of %s by single crystal X-ray diffraction" % cif[
+    html.element("h1", ('Determination of the crystal structure of %s by'
+                        ' single crystal X-ray diffraction') % cif[
         "_chemical_name_common"])
     html.end("center")
     html.start("ol")
@@ -1245,30 +1384,40 @@ def MainReportEN(html, cif):
     html.element("li", "Introduction")
     html.end("h2")
     html.element("p",
-                 "\n The aim of this study was to determine the crystalline structure of %s, to establish its solid state molecular geometry and to generate a simulated X-ray powder diffraction pattern corresponding to the structure, which could be compared with experimental patterns." %
+                 ('\n The aim of this study was to determine the crystalline'
+                  ' structure of %s, to establish its solid state molecular'
+                  ' geometry and to generate a simulated X-ray powder'
+                  ' diffraction pattern corresponding to the structure,'
+                  ' which could be compared with experimental patterns.') %
                  cif["_chemical_name_common"])
-    # to prepare a list of major non-covalent bonds that are responsible for the cohesion of the crystalline structure
+    # to prepare a list of major non-covalent bonds that are responsible for
+    # the cohesion of the crystalline structure
     html.start("h2")
     html.element("li", "X-ray experimental parameters")
     html.end("h2")
     if exists(cif, "_exptl_special_details"):
-        html.element("p", "Slow evaporation from %s affords crystals suitable for X-rays diffraction studies. " % cif[
+        html.element("p", ('Slow evaporation from %s affords crystals suitable'
+                           ' for X-rays diffraction studies. ') % cif[
             "_exptl_special_details"])
     html.start("p")
     html.data(
-        "\nA single crystal selected by observation under a binocular microscope was mounted on the goniometric head of a %s diffractometer. " % (
+        ('\nA single crystal selected by observation under a binocular'
+         ' microscope was mounted on the goniometric head of a %s'
+         ' diffractometer. ') % (
             cif["_diffrn_measurement_device_type"]))
     html.data("\n Intensities were collected at")
     try:
-        T = float(re.sub("\(.\)", "", cif["_diffrn_ambient_temperature"]))
-    except:
-        T = 293
-    if T < 280:
-        html.data(" low temperature (T=%i K), " % T)
+        temperature = float(re.sub("\(.\)", "",
+                                   cif["_diffrn_ambient_temperature"]))
+    except Exception:
+        temperature = 293
+    if temperature < 280:
+        html.data(" low temperature (T=%i K), " % temperature)
     else:
-        html.data(" room temperature (T=%i K), " % T)
+        html.data(" room temperature (T=%i K), " % temperature)
 
-    html.data("with the use of a %s monochromator " % cif["_diffrn_radiation_monochromator"])
+    html.data("with the use of a %s monochromator " %
+              cif["_diffrn_radiation_monochromator"])
 
     if cif["_diffrn_radiation_type"].find("Mo") == 0:
         html.rawdata("Mo K&alpha; radiation ")
@@ -1276,7 +1425,8 @@ def MainReportEN(html, cif):
         html.rawdata("Cu K&alpha; radiation ")
     if cif["_diffrn_radiation_type"].lower().find("syn") == 0:
         html.data("synchrotron radiation ")
-    html.rawdata("( &lambda; = %s &Aring; ).\n" % (cif["_diffrn_radiation_wavelength"]))
+    html.rawdata("( &lambda; = %s &Aring; ).\n" %
+                 (cif["_diffrn_radiation_wavelength"]))
 
     if cif["_symmetry_space_group_name_H-M"].upper()[0] == "I":
         tmptxt = "body centered"
@@ -1285,67 +1435,108 @@ def MainReportEN(html, cif):
     else:
         tmptxt = "primitive"
     html.data(
-        " Systematic investigation of the diffraction nodes indicate that the crystal belong to the %s system, with a %s Bravais lattice. The unit cell parameters are:\n" % (
+        (' Systematic investigation of the diffraction nodes indicate that the'
+         ' crystal belong to the %s system, with a %s Bravais lattice.'
+         ' The unit cell parameters are:\n') % (
             cif["_symmetry_cell_setting"].lower(), tmptxt))
     html.end("p")
     html.start("center")
     html.rawdata(
-        "a (&Aring;) = %5.2f ; b (&Aring;) = %5.2f  ; c (&Aring;) = %5.2f  ; &alpha; (°) = %5.2f ; &beta; (°) = %5.2f ; &gamma; (°) = %5.2f" % (
-            floatp(cif["_cell_length_a"]), floatp(cif["_cell_length_b"]), floatp(cif["_cell_length_c"]),
-            floatp(cif["_cell_angle_alpha"]), floatp(cif["_cell_angle_beta"]), floatp(cif["_cell_angle_gamma"])))
+        ('a (&Aring;) = %5.2f ; b (&Aring;) = %5.2f  ;'
+         ' c (&Aring;) = %5.2f  ; &alpha; (°) = %5.2f ;'
+         ' &beta; (°) = %5.2f ; &gamma; (°) = %5.2f') % (
+            floatp(cif["_cell_length_a"]), floatp(cif["_cell_length_b"]),
+            floatp(cif["_cell_length_c"]), floatp(cif["_cell_angle_alpha"]),
+            floatp(cif["_cell_angle_beta"]), floatp(cif["_cell_angle_gamma"])))
     html.end("center")
 
     html.start("p")
     html.data(
-        "\nIn view of the number of atoms in the %s molecule and of the unit cell volume, it is concluded that this unit cell must contain %s molecules having the formula \n " % (
+        ('\nIn view of the number of atoms in the %s molecule and of the unit'
+         ' cell volume, it is concluded that this unit cell must contain %s'
+         ' molecules having the formula \n ') % (
             cif["_chemical_name_common"], cif["_cell_formula_units_Z"]))
     html.rawdata(formula2chem(cif["_chemical_formula_sum"]))
     html.data(
-        "\n which is equivalent to a calculated density of %s. The number of reflections collected was %s, of which %s were unique.\n" % (
-            cif["_exptl_crystal_density_diffrn"], cif["_diffrn_reflns_number"], cif["_reflns_number_total"]))
+        ('\n which is equivalent to a calculated density of %s. The number of'
+         ' reflections collected was %s, of which %s were unique.\n') % (
+            cif["_exptl_crystal_density_diffrn"],
+            cif["_diffrn_reflns_number"], cif["_reflns_number_total"]))
     html.end("p")
 
     if cif["_symmetry_space_group_name_H-M"].upper() in ["P 21", "P21"]:
         html.element("p",
-                     "\nDetermination of the space group was achieved  unequivocally due to the presence of an unique systematic extinction along the monoclinic axis.\n")
+                     ('\nDetermination of the space group was achieved'
+                      ' unequivocally due to the presence of an unique'
+                      ' systematic extinction along the monoclinic axis.\n'))
     elif cif["_symmetry_space_group_name_H-M"].upper() in ["P C", "PC"]:
         html.element("p",
-                     "\nDetermination of the space group was achieved  unequivocally due to the presence of an unique zonal extinction orthogonal to the monoclinic axis.\n")
+                     ('\nDetermination of the space group was achieved'
+                      ' unequivocally due to the presence of an unique zonal'
+                      ' extinction orthogonal to the monoclinic axis.\n'))
     elif cif["_symmetry_space_group_name_H-M"].upper()[0] == "C":
         html.element("p",
-                     "\nDetermination of the space group was achieved  unequivocally due to the presence of an integral extinction.\n")
-    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21 21 21", "P212121"]:
+                     ('\nDetermination of the space group was achieved'
+                      ' unequivocally due to the presence of an integral'
+                      ' extinction.\n'))
+    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21 21 21",
+                                                           "P212121"]:
         html.element("p",
-                     "\nDetermination of the space group was achieved  unequivocally due to the presence of three systematic extinctions along the main crystal directions.\n")
-    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21/C", "P21/C", "P21/A", "P 21/A", "P21/N", "P 21/N",
+                     ('\nDetermination of the space group was achieved'
+                      ' unequivocally due to the presence of three systematic'
+                      ' extinctions along the main crystal directions.\n'))
+    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21/C", "P21/C",
+                                                           "P21/A", "P 21/A",
+                                                           "P21/N", "P 21/N",
                                                            "C 2/C", "C2/C"]:
         html.element("p",
-                     "\nDetermination of the space group was achieved  unequivocally due to the presence of a systematic extinction along the monoclinic axis together with a systematic zonal extinction orthogonal to this axis.\n")
+                     ('\nDetermination of the space group was achieved'
+                      ' unequivocally due to the presence of a systematic'
+                      ' extinction along the monoclinic axis together with a'
+                      ' systematic zonal extinction orthogonal to this'
+                      ' axis.\n'))
     elif cif["_symmetry_space_group_name_H-M"].upper() in ["P -1", "P -1"]:
         html.element("p",
-                     "Based on the statistical distribution of the intensities, a centro-symmetric structure is deduced.")
+                     ('Based on the statistical distribution of the intensities'
+                      ', a centro-symmetric structure is deduced.'))
     elif cif["_symmetry_space_group_name_H-M"].upper() in ["P1", "P 1"]:
         html.element("p",
-                     "Based on the statistical distribution of the intensities, a non centro-symmetric structure is deduced.")
+                     ('Based on the statistical distribution of the intensities'
+                      ', a non centro-symmetric structure is deduced.'))
     else:
-        html.element("p", "Raconter ici des conneries sur la symetrie de ce bordel")
+        html.element("p",
+                     "Raconter ici des conneries sur la symetrie de ce bordel")
 
     html.start("h2")
     html.element("li", "Structure Refinements")
     html.end("h2")
     html.element("p",
-                 "\nThe structure was solved by a direct methods using the SIR software [1]; and refined on FІ by full least squares methods with SHELXTL [2]. All non hydrogen atoms were refined with anisotropic displacement parameters, a riding model was used for hydrogen atoms. Final agreement values  are R1 = %s (observed reflections) and wR2 = %s (all data) for %s reflections and %s parameters, with a goodness of fit of %s.\n" % (
-                     cif["_refine_ls_R_factor_gt"], cif["_refine_ls_wR_factor_ref"], cif["_refine_ls_number_reflns"],
-                     cif["_refine_ls_number_parameters"], cif["_refine_ls_goodness_of_fit_ref"]))
+                 ('\nThe structure was solved by a direct methods using the'
+                  ' SIR software [1]; and refined on FІ by full least squares'
+                  ' methods with SHELXTL [2]. All non hydrogen atoms were'
+                  ' refined with anisotropic displacement parameters, a riding'
+                  ' model was used for hydrogen atoms. Final agreement values'
+                  ' are R1 = %s (observed reflections) and wR2 = %s (all data)'
+                  ' for %s reflections and %s parameters, with a goodness of'
+                  'fit of %s.\n') % (
+                     cif["_refine_ls_R_factor_gt"],
+                     cif["_refine_ls_wR_factor_ref"],
+                     cif["_refine_ls_number_reflns"],
+                     cif["_refine_ls_number_parameters"],
+                     cif["_refine_ls_goodness_of_fit_ref"]
+                 ))
     html.start("h2")
     html.element("li", "\nDescription of the structure \n")
     html.end("h2")
     html.start("p")
     html.data(
-        "\n The compound (figure 1 and 2) crystallize in the space group %s, the asymmetric unit of the crystal is made up of %s molecule of " % (
+        ('\n The compound (figure 1 and 2) crystallize in the space group %s,'
+         'the asymmetric unit of the crystal is made up of %s molecule of ') % (
             cif["_symmetry_space_group_name_H-M"], Zprime(cif)))
     html.rawdata(cif["_chemical_name_common"])
-    html.data(", thus %s formula are present in the unit cell. \n " % (cif["_cell_formula_units_Z"]))
+    html.data(", thus %s formula are present in the unit cell. \n " % (
+        cif["_cell_formula_units_Z"]
+    ))
     if len(cif["_chemical_formula_moiety"].split(",")) == 1:
         html.data("No additional molecule like organic or water is found.\n")
     else:
@@ -1353,12 +1544,19 @@ def MainReportEN(html, cif):
         html.rawdata(formula2chem(cif["_chemical_formula_moiety"]))
         html.data(".")
     html.data(
-        " Examination of the molecular structure confirms that all bond angles and lengths stand in the standard range values.")
+        (' Examination of the molecular structure confirms that all bond angles'
+         ' and lengths stand in the standard range values.'))
     html.end("p")
 
-    html.element("p", """\n    Crystal data, X-rays experimental parameters and structure refinements are given in Table 1. 
-    Table 2 lists the positional parameters for all independent non-hydrogen atoms together with their equivalent isotropic displacement parameters.
-    Bond lengths and angles are listed Table 3 and 4. Hydrogen positions are reported Table 5. Table 6 lists all the hydrogen bonds. The figures were generated with the PLATON program [3].""")
+    html.element("p",
+                 ('\n    Crystal data, X-rays experimental parameters and'
+                  ' structure refinements are given in Table 1. Table 2 lists'
+                  ' the positional parameters for all independent non-hydrogen'
+                  ' atoms together with their equivalent isotropic displacement'
+                  ' parameters. Bond lengths and angles are listed Table 3'
+                  ' and 4. Hydrogen positions are reported Table 5. Table 6'
+                  ' lists all the hydrogen bonds. The figures were generated'
+                  ' with the PLATON program [3].'))
 
     if exists(cif, "_refine_ls_abs_structure_Flack"):
         if cif["_refine_ls_abs_structure_Flack"] != ".":
@@ -1369,21 +1567,32 @@ def MainReportEN(html, cif):
     html.element("li", "\nSimulated X-ray diffraction pattern.\n")
     html.end("h2")
     html.element("p",
-                 "A simulated diffraction pattern (Figure 3) was produced from the experimentally determined crystalline structure. An experimental powder diffraction pattern can be compared to this theoretical pattern to demonstrate the nature of the crystalline structure. Minor differences (if any) can be explained by preferential orientations in the powder.")
+                 ('A simulated diffraction pattern (Figure 3) was produced from'
+                  ' the experimentally determined crystalline structure. An'
+                  ' experimental powder diffraction pattern can be compared to'
+                  ' this theoretical pattern to demonstrate the nature of the'
+                  ' crystalline structure. Minor differences (if any) can be'
+                  ' explained by preferential orientations in the powder.'))
     html.start("h2")
     html.element("li", "\nConclusion\n")
     html.end("h2")
     html.element("p",
-                 "The crystalline structure of %s was determined by X-ray diffraction on a single crystal, allowing the generation of a reference powder pattern." %
+                 ('The crystalline structure of %s was determined by X-ray'
+                  ' diffraction on a single crystal, allowing the generation'
+                  ' of a reference powder pattern.') %
                  cif["_chemical_name_common"])
     html.start("h2")
     html.element("li", "\nReferences\n")
     html.end("h2")
     html.start("p")
     html.rawdata(
-        "[1] Altomare, A.; Cascarano, G.; Giacovazzo, C.; Guagliardi, A.; Burla, M. C.; Polidori, G.; Cavalli, A. J. Appl. Crystallogr. <b>1994</b>, 27, p 435-436.<br>")
+        ('[1] Altomare, A.; Cascarano, G.; Giacovazzo, C.; Guagliardi, A.;'
+         ' Burla, M. C.; Polidori, G.; Cavalli, A. J. Appl. Crystallogr.'
+         ' <b>1994</b>, 27, p 435-436.<br>'))
     html.rawdata(
-        "[2] Sheldrick, G. M. SHELXTL-Plus, Rel. 5.03; Siemens Analytical X-ray Instruments Inc.: Madison, WI, <b>1995</b>.<br>")
+        ('[2] Sheldrick, G. M. SHELXTL-Plus, Rel. 5.03;'
+         ' Siemens Analytical X-ray Instruments Inc.: Madison, WI,'
+         ' <b>1995</b>.<br>'))
     html.rawdata("[3] Spek, A.L. J. Appl. Cryst. <B>2003</B> 36, p 7-13.<br>")
     html.end("p")
     html.end("ol")
@@ -1394,7 +1603,8 @@ def MainReportFR(html, cif):
     """this function generates the report in FRENCH to the HTML file"""
     html.start("center")
     html.element("h1",
-                 "Dйtermination de la structure cristalline du composй %s par diffraction des rayons X sur monocristal" %
+                 ('Dйtermination de la structure cristalline du composй %s'
+                  ' par diffraction des rayons X sur monocristal') %
                  cif["_chemical_name_common"])
     html.end("center")
     html.start("ol")
@@ -1402,107 +1612,165 @@ def MainReportFR(html, cif):
     html.element("li", "Introduction")
     html.end("h2")
     html.element("p",
-                 "\n Le but de ce travail est d'йtablir la structure cristalline du composй %s, de dйcrire sa gйomйtrie molйculaire а l'йtat solide, d'inventorier les principales liaisons non covalentes responsables de la cohйsion de l'йdifice cristallin, et de gйnйrer le diagramme de diffraction X sur poudres simulй correspondant а la structure qui sera comparй aux enregistrements expйrimentaux." %
+                 ("\n Le but de ce travail est d'йtablir la structure"
+                  " cristalline du composй %s, de dйcrire sa gйomйtrie"
+                  " molйculaire а l'йtat solide, d'inventorier les"
+                  " principales liaisons non covalentes responsables de la"
+                  " cohйsion de l'йdifice cristallin, et de gйnйrer le"
+                  " diagramme de diffraction X sur poudres simulй"
+                  " correspondant а la structure qui sera comparй"
+                  " aux enregistrements expйrimentaux.") %
                  cif["_chemical_name_common"])
     html.start("h2")
     html.element("li", "Paramиtres Expйrimentaux")
     html.end("h2")
     if exists(cif, "_exptl_special_details"):
-        html.element("p", "Provenance des cristaux : %s. " % cif["_exptl_special_details"])
+        html.element("p", "Provenance des cristaux : %s. " %
+                     cif["_exptl_special_details"])
     html.start("p")
     html.data(
-        "\nUn monocristal sйlectionnй optiquement sous microscope binoculaire a йtй placй sur la tкte goniomйtrique d'un diffractomиtre %s" % (
+        ("\nUn monocristal sйlectionnй optiquement sous microscope"
+         " binoculaire a йtй placй sur la tкte goniomйtrique d'un"
+         " diffractomиtre %s") % (
             cif["_diffrn_measurement_device_type"]))
     try:
-        T = floatp(cif["_diffrn_ambient_temperature"])
-    except:
-        T = 293
+        temperature = floatp(cif["_diffrn_ambient_temperature"])
+    except Exception:
+        temperature = 293
 
-    if T < 280:
-        html.data(" а basse tempйrature (T=%i K), " % T)
+    if temperature < 280:
+        html.data(" а basse tempйrature (T=%i K), " % temperature)
     else:
-        html.data(" а tempйrature ambiante (T=%i K), " % T)
+        html.data(" а tempйrature ambiante (T=%i K), " % temperature)
 
     if cif["_diffrn_radiation_type"].find("MoK") == 0:
-        html.data("et exposй aux rayons X produits par un tube а filament de molybdиne ")
+        html.data(("et exposй aux rayons X produits par un tube а"
+                   " filament de molybdиne "))
     if cif["_diffrn_radiation_type"].find("CuK") == 0:
-        html.data("et exposй aux rayons X produits par un tube а filament de cuivre ")
+        html.data(("et exposй aux rayons X produits par un tube а"
+                   " filament de cuivre "))
     if cif["_diffrn_radiation_type"].find("CoK") == 0:
-        html.data("et exposй aux rayons X produits par un tube а filament de cobalt ")
-    html.rawdata("( &lambda; = %s &Aring; )\n" % (cif["_diffrn_radiation_wavelength"]))
-    html.data(" aprиs monochromatisation sur cristal de %s." % cif["_diffrn_radiation_monochromator"])
+        html.data(("et exposй aux rayons X produits par un tube а"
+                   " filament de cobalt "))
+    html.rawdata("( &lambda; = %s &Aring; )\n" %
+                 (cif["_diffrn_radiation_wavelength"]))
+    html.data(" aprиs monochromatisation sur cristal de %s." %
+              cif["_diffrn_radiation_monochromator"])
     html.data(
-        " Une recherche systйmatique de noeuds de diffraction indique que le cristal appartient au systиme %sque avec les paramиtres de maille suivants :\n" %
+        (" Une recherche systйmatique de noeuds de diffraction indique que le"
+         " cristal appartient au systиme %sque avec les paramиtres de maille"
+         " suivants :\n") %
         cif["_symmetry_cell_setting"].lower()[:-1])
     html.end("p")
     html.start("center")
     html.rawdata(dot2virg(
-        "a = %5.2f &Aring; ; b = %5.2f &Aring; ; c = %5.2f &Aring; ; &alpha; = %5.2f° ; &beta; = %5.2f° ; &gamma; = %5.2f°" % (
-            floatp(cif["_cell_length_a"]), floatp(cif["_cell_length_b"]), floatp(cif["_cell_length_c"]),
-            float(cif["_cell_angle_alpha"]), floatp(cif["_cell_angle_beta"]), floatp(cif["_cell_angle_gamma"]))))
+        ("a = %5.2f &Aring; ; b = %5.2f &Aring; ;"
+         " c = %5.2f &Aring; ; &alpha; = %5.2f° ;"
+         " &beta; = %5.2f° ; &gamma; = %5.2f°") % (
+            floatp(cif["_cell_length_a"]), floatp(cif["_cell_length_b"]),
+            floatp(cif["_cell_length_c"]), float(cif["_cell_angle_alpha"]),
+            floatp(cif["_cell_angle_beta"]), floatp(cif["_cell_angle_gamma"]))))
     html.end("center")
     if cif["_symmetry_space_group_name_H-M"].upper() in ["P 21", "P21"]:
         html.element("p",
-                     "\nLa dйtermination du groupe spatial s'est dйroulйe sans ambiguпtй en raison de l'unique extinction systйmatique axiale mise en йvidence le long de l'axe monoclinique.\n")
+                     ("\nLa dйtermination du groupe spatial s'est dйroulйe"
+                      " sans ambiguпtй en raison de l'unique extinction"
+                      " systйmatique axiale mise en йvidence le long de"
+                      " l'axe monoclinique.\n"))
     elif cif["_symmetry_space_group_name_H-M"].upper() in ["P C", "PC"]:
         html.element("p",
-                     "\nLa dйtermination du groupe spatial s'est dйroulйe sans ambiguпtй en raison de l'unique extinction systйmatique zonale mise en йvidence perpendiculairement а l'axe monoclinique.\n")
+                     ("\nLa dйtermination du groupe spatial s'est dйroulйe"
+                      " sans ambiguпtй en raison de l'unique extinction"
+                      " systйmatique zonale mise en йvidence"
+                      " perpendiculairement а l'axe monoclinique.\n"))
     elif cif["_symmetry_space_group_name_H-M"].upper() == "C":
         html.element("p",
-                     "\nLa dйtermination du groupe spatial s'est dйroulйe sans ambiguпtй en raison de l'unique extinction systйmatique intйgrale mise en йvidence.\n")
-    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21 21 21", "P212121"]:
+                     ("\nLa dйtermination du groupe spatial s'est dйroulйe"
+                      " sans ambiguпtй en raison de l'unique extinction"
+                      " systйmatique intйgrale mise en йvidence.\n"))
+    elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21 21 21",
+                                                           "P212121"]:
         html.element("p",
-                     "\nLa dйtermination du groupe spatial s'est dйroulйe sans ambiguпtй en raison de la prйsence de trois extinctions systйmatiques dйtectйes le long des axes principaux du cristal.\n")
+                     ("\nLa dйtermination du groupe spatial s'est dйroulйe"
+                      " sans ambiguпtй en raison de la prйsence de trois"
+                      " extinctions systйmatiques dйtectйes le long des"
+                      " axes principaux du cristal.\n"))
     elif cif["_symmetry_space_group_name_H-M"].upper() in ["P 21/C", "P21/C"]:
         html.element("p",
-                     "\nLa dйtermination du groupe spatial s'est dйroulйe sans ambiguпtй en raison de la prйsence d'une extinction systйmatique axiale le long de l'axe monoclinique associйe а une extinction systйmatique zonale perpendiculaire а cet axe.\n")
+                     ("\nLa dйtermination du groupe spatial s'est dйroulйe"
+                      " sans ambiguпtй en raison de la prйsence d'une"
+                      " extinction systйmatique axiale le long de l'axe"
+                      " monoclinique associйe а une extinction systйmatique"
+                      " zonale perpendiculaire а cet axe.\n"))
 
     html.start("p")
     html.data(
-        "\nCompte tenu du nombre d'atomes appartenant а la molйcule de %s et des paramиtres de la maille йlйmentaire, il est dйduit que cette maille doit contenir %s molйcules de formule\n " % (
+        ("\nCompte tenu du nombre d'atomes appartenant а la molйcule de %s et"
+         " des paramиtres de la maille йlйmentaire, il est dйduit que"
+         " cette maille doit contenir %s molйcules de formule\n ") % (
             cif["_chemical_name_common"], cif["_cell_formula_units_Z"]))
     html.rawdata(formula2chem(cif["_chemical_formula_moiety"]))
     html.data(
-        "\n ce qui correspond а une densitй calculйe de %s. Le nombre de rйflexions collectйes est de %s, parmi lesquelles %s ont йtй trouvйes uniques.\n" % (
-            cif["_exptl_crystal_density_diffrn"], cif["_diffrn_reflns_number"], cif["_reflns_number_total"]))
+        ("\n ce qui correspond а une densitй calculйe de %s. Le nombre de"
+         " rйflexions collectйes est de %s, parmi lesquelles %s ont йtй"
+         " trouvйes uniques.\n") % (
+            cif["_exptl_crystal_density_diffrn"],
+            cif["_diffrn_reflns_number"],
+            cif["_reflns_number_total"]))
     html.end("p")
-    # et [[] ont йtй] considйrйes comme observйes, une [bonne faible mйdiocre] йquivalence par symйtrie ayant йtй constatй [en raison de la taille rйduite de l'йchantillon].
+    # et [[] ont йtй] considйrйes comme observйes, une [bonne faible
+    #  mйdiocre] йquivalence par symйtrie ayant йtй constatй [en raison
+    #  de la taille rйduite de l'йchantillon].
 
     html.start("h2")
     html.element("li", "Affinement de la structure")
     html.end("h2")
     try:
-        Ra = float(cif["_refine_ls_R_factor_all"]) * 100
-        Ri = float(cif["_refine_ls_R_factor_gt"]) * 100
-        wRa = float(cif["_refine_ls_wR_factor_ref"]) * 100
-        wRi = float(cif["_refine_ls_wR_factor_gt"]) * 100
-        R = min(Ra, Ri, wRa, wRi)
-    except:
-        R = 100
-    if R < 5.5:
+        ra = float(cif["_refine_ls_R_factor_all"]) * 100
+        ri = float(cif["_refine_ls_R_factor_gt"]) * 100
+        w_ra = float(cif["_refine_ls_wR_factor_ref"]) * 100
+        w_ri = float(cif["_refine_ls_wR_factor_gt"]) * 100
+        r = min(ra, ri, w_ra, w_ri)
+    except Exception:
+        r = 100
+    if r < 5.5:
         txt = "haute"
-    elif R < 7:
+    elif r < 7:
         txt = "bonne"
-    elif R < 11:
+    elif r < 11:
         txt = "moyenne"
     else:
         txt = "mediocre"
     html.element("p",
-                 "\nLa structure а йtй rйsolue par mйthode directe а l'aide du programme SIR, les affinements par moindres carrйs effectuйs grвce au programme SHELX ont permis d'aboutir а une structure de %s rйsolution, l'indice d'accord de rйfйrence atteignant la valeur %s %%. Les positions des atomes d'hydrogиne ont йtй placйes selon leurs coordonnйes idйalisйes et introduites, ainsi qu'une composante isotropique fonction de l'atome porteur, dans les calculs finaux des facteurs de structure.\n" % (
-                     txt, R))
+                 ("\nLa structure а йtй rйsolue par mйthode directe а"
+                  " l'aide du programme SIR, les affinements par moindres"
+                  " carrйs effectuйs grвce au programme SHELX ont permis"
+                  " d'aboutir а une structure de %s rйsolution, l'indice"
+                  " d'accord de rйfйrence atteignant la valeur %s %%."
+                  " Les positions des atomes d'hydrogиne ont йtй placйes"
+                  " selon leurs coordonnйes idйalisйes et introduites,"
+                  " ainsi qu'une composante isotropique fonction de l'atome"
+                  " porteur, dans les calculs finaux des facteurs de"
+                  " structure.\n") % (txt, r))
 
     html.start("h2")
     html.element("li", "\nDescription de la structure\n")
     html.end("h2")
     html.element("p",
-                 "\nLe schйma 1, en annexe, prйsente la numйrotation atomique, alors que les tables jointes en annexe consignent les paramиtres expйrimentaux et d'affinements, ainsi que les valeurs des distances et angles de liaisons.\n")
+                 ("\nLe schйma 1, en annexe, prйsente la numйrotation"
+                  " atomique, alors que les tables jointes en annexe"
+                  " consignent les paramиtres expйrimentaux et d'affinements,"
+                  " ainsi que les valeurs des distances et angles"
+                  " de liaisons.\n"))
 
     html.end("ol")
     html.element("hr", " ")
 
 
 def AbsStructEN(html, cif):
-    """Adds some text to the English report about the absolute configuration of the molecule
+    """
+    Adds some text to the English report about the absolute configuration of
+    the molecule.
     @param html: HTML object where the text will be added to.
     @type html: XMLWrite object.
     @param cif: The CIF-object of the structure
@@ -1522,8 +1790,10 @@ def AbsStructEN(html, cif):
 
     else:
         txt = "heavy"
-    html.data("The %s molecule contains a %s atom that allows the absolute configuration to be determined, \
-    making used of a high resolution data collection" % (cif["_chemical_name_common"], txt))
+    html.data(('The %s molecule contains a %s atom that allows the absolute'
+               ' configuration to be determined, making used of a high'
+               ' resolution data collection') %
+              (cif["_chemical_name_common"], txt))
     if floatp(cif["_cell_measurement_temperature"]) < 280:
         html.data("    (performed at low temperature).")
     else:
@@ -1535,41 +1805,56 @@ def AbsStructEN(html, cif):
             if i[0][0].find("_atom_site_asymmetry_label") == 0:
                 chiral = i[1]
     for i in chiral:
-        txt += " %s: %s ;" % (i["_atom_site_asymmetry_label"], i["_atom_site_asymmetry_type"])
+        txt += " %s: %s ;" % (i["_atom_site_asymmetry_label"],
+                              i["_atom_site_asymmetry_type"])
     if len(txt) > 0:
         txt = txt[:-2]
 
-    html.data(" The Flack x parameter is calculated based on the anomalous scattering method. \
-    It gives the absolute structure, providing a sufficient estimate standard deviation is reached. \
-    According to the theory, the expected values of the Flack x parameter are 0 for correct (within 3 esd.s) \
-    and +1 for inverted absolute structure. The results considering the configuration  %s is %s, \
-    which unambiguously proved this absolute configuration for %s." % (
-        txt, cif["_refine_ls_abs_structure_Flack"], cif["_chemical_name_common"]))
+    html.data((' The Flack x parameter is calculated based on the anomalous'
+               ' scattering method. It gives the absolute structure, providing'
+               ' a sufficient estimate standard deviation is reached.'
+               ' According to the theory, the expected values of the Flack'
+               ' x parameter are 0 for correct (within 3 esd.s) and +1 for'
+               ' inverted absolute structure. The results considering the'
+               ' configuration  %s is %s, which unambiguously proved this'
+               ' absolute configuration for %s.') % (
+        txt,
+        cif["_refine_ls_abs_structure_Flack"],
+        cif["_chemical_name_common"]
+    ))
     # html.data(txt)
     html.end("p")
 
 
 def structureImage(basename, structure="structure"):
-    """lauch PLATON and let the user chose the structural (or the ADP or powder) representation of the molecule
+    """
+    Launch PLATON and let the user chose the structural (or the ADP or powder)
+    representation of the molecule.
     @param basename: the name of the CIF-file without the extention
     @type basename: string
     @type structure: string
-    @param structure: can be "powder" and "ADP", if not a simple structure is chosen
+    @param structure: can be "powder" and "ADP",
+                      if not a simple structure is chosen
     @return None
     """
 
     if structure.lower() == "powder":
         # noinspection PyUnusedLocal
         txt = eval(input(
-            "I will now lauch PLATON and let you chose the simulated powder pattern of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit."))
+            ('I will now lauch PLATON and let you chose the simulated powder'
+             ' pattern of the molecule\nOnce you have selected a nice view,'
+             ' please click on «EPS» to export the drawing and quit.')))
         while not os.path.isfile(basename + ".ps"):
             i = os.popen("platon %s.cif" % basename)
-            for l in i.readlines(): print(l.strip())
+            for l in i.readlines():
+                print(l.strip())
             i.close()
     else:
         # noinspection PyUnusedLocal
         txt = eval(input(
-            "I will now lauch PLATON and let you chose the %s representation of the molecule\nOnce you have selected a nice view, please click on «EPS» to export the drawing and quit." % structure))
+            ('I will now lauch PLATON and let you chose the %s representation'
+             ' of the molecule\nOnce you have selected a nice view, please'
+             ' click on «EPS» to export the drawing and quit.') % structure))
         while not os.path.isfile(basename + ".ps"):
             i, o = os.popen2("platon -o %s.cif" % basename)
             if structure.lower() == "adp":
@@ -1579,26 +1864,32 @@ def structureImage(basename, structure="structure"):
             i.flush()
             i.write("menu on\n")
             i.flush()
-            for l in o.readlines(): print(l.strip())
+            for l in o.readlines():
+                print(l.strip())
             i.close()
 
     os.rename(basename + ".ps", "%s-%s.ps" % (basename, structure))
     print("Converting PostScript to PNG ... can take a while")
-    inp = os.popen("convert -rotate 90 -quality 90 -geometry 2400x1800 %s-%s.ps %s-%s.png" % (
-        basename, structure, basename, structure))
-    for l in inp.readlines(): print(l.strip())
+    inp = os.popen(('"convert -rotate 90 -quality 90 -geometry 2400x1800'
+                    ' %s-%s.ps %s-%s.png') %
+                   (basename, structure, basename, structure))
+    for l in inp.readlines():
+        print(l.strip())
     inp.close()
-    if (not os.path.isfile("%s-%s.png" % (basename, structure)) and os.path.isfile(
-            "%s-%s.png.0" % (basename, structure))):
-        workdir = os.path.dirname(basename)
+    if (not os.path.isfile("%s-%s.png" % (basename, structure))
+       and os.path.isfile("%s-%s.png.0" % (basename, structure))):
+        work_dir = os.path.dirname(basename)
         name = os.path.basename(basename)
-        if len(workdir) == 0: workdir = "."
-        dir1 = os.listdir(workdir)
+        if len(work_dir) == 0:
+            work_dir = "."
+        dir1 = os.listdir(work_dir)
         dir2 = []
         for i in dir1:
-            if i.find("%s-%s.png." % (name, structure)) == 0: dir2.append(i)
+            if i.find("%s-%s.png." % (name, structure)) == 0:
+                dir2.append(i)
         dir2.sort()
-        os.rename(os.path.join(workdir, dir2[-1]), "%s-%s.png" % (basename, structure))
+        os.rename(os.path.join(work_dir, dir2[-1]),
+                  "%s-%s.png" % (basename, structure))
     print("Done !\n" + 70 * "_")
 
 
@@ -1610,14 +1901,15 @@ def BondLength(cif):
     @return: a dictionary with all the "A1 - A2": "distance"
     @rtype: dictionary
     """
-    BL = {}
+    bond_lengths = {}
     for loop in cif["loop_"]:
         for key in loop[0]:
             if key == "_geom_bond_distance":
                 for i in loop[1]:
-                    BL[" %s - %s " % (i["_geom_bond_atom_site_label_1"], i["_geom_bond_atom_site_label_2"])] = i[
-                        "_geom_bond_distance"]
-    return BL
+                    label = " %s - %s " % (i["_geom_bond_atom_site_label_1"],
+                                           i["_geom_bond_atom_site_label_2"])
+                    bond_lengths[label] = i["_geom_bond_distance"]
+    return bond_lengths
 
 
 def BondAngle(cif):
@@ -1628,14 +1920,17 @@ def BondAngle(cif):
     @return: dictionary with all the "A1 - A2 - A3":"Angle"
     @rtype: dictionary
     """
-    BA = {}
+    bond_angles = {}
     for loop in cif["loop_"]:
         for key in loop[0]:
             if key == "_geom_angle":
                 for i in loop[1]:
-                    BA[" %s - %s - %s " % (i["_geom_angle_atom_site_label_1"], i["_geom_angle_atom_site_label_2"],
-                                           i["_geom_angle_atom_site_label_3"])] = i["_geom_angle"]
-    return BA
+                    bond_angles[" %s - %s - %s " % (
+                        i["_geom_angle_atom_site_label_1"],
+                        i["_geom_angle_atom_site_label_2"],
+                        i["_geom_angle_atom_site_label_3"]
+                    )] = i["_geom_angle"]
+    return bond_angles
 
 
 def AtomPositions(cif):
@@ -1643,8 +1938,9 @@ def AtomPositions(cif):
     Each table contents the atome label + x, y and z coordinate and the U(eq)
     @param cif: The CIF-object of the Xtal structure
     @type cif: dictionary
-    @return: tupple of 2 tables, the first with the heavy atoms, the second with the hydrogens
-    @rtype: tupple
+    @return: tuple of 2 tables, the first with the heavy atoms,
+             the second with the hydrogens
+    @rtype: tuple
     """
     heavy = []
     hydro = []
@@ -1697,7 +1993,8 @@ def stringmulti(text, value):
     @return: txt*value
     @rtype: string
     """
-    if "(" not in text: return str(float(text.strip().split("(")[0]) * value)
+    if "(" not in text:
+        return str(float(text.strip().split("(")[0]) * value)
     valuetxt, esdtxt = text.strip().split("(", 1)
     l1 = list(valuetxt)
     l1.reverse()
@@ -1714,13 +2011,14 @@ def stringmulti(text, value):
             l1[i] = "+"
     l1.reverse()
     esd = ""
-    for i in l1: esd += str(i)
+    for i in l1:
+        esd += str(i)
     #    esd="%8.2f"%(float(esd)*value)
     valuef = "%s" % (float(valuetxt) * value)
     esd2 = ""
     start = True
     for i in list("%s" % (float(esd) * value)):
-        if not i in ["0", ".", " "] or not start:
+        if i not in ["0", ".", " "] or not start:
             esd2 += i
             start = False
     if len(valuef) > 2 and len(esd2) > 2:
@@ -1855,7 +2153,7 @@ def encode_entity(text, pattern=_escape):
         out = []
         for char in m.group():
             out.append("&#%d;" % ord(char))
-        return string.join(out, "")
+        return ''.join(out)
 
     return encode(pattern.sub(escape_entities, text), "ascii")
 
@@ -1910,7 +2208,7 @@ class XMLWriter:
             self.__write(">")
             self.__open = 0
         if self.__data:
-            data = string.join(self.__data, "")
+            data = ''.join(self.__data,)
             self.__write(escape_cdata(data, self.__encoding))
             self.__data = []
 
@@ -2020,13 +2318,14 @@ class XMLWriter:
 
 def renamefile(infile, namelist):
     """
-    The CSD database has only room for 8 char to define the reference of the molecule.
-    This function just tries to find a coherent name for the molecule in the database :
-    it uses the 6 first numbers of the molecule name then "-" or a letter depending if the Xtal is a base or a
+    The CSD database has only room for 8 char to define the reference of the
+    molecule. This function just tries to find a coherent name for the molecule
+    in the database : it uses the 6 first numbers of the molecule name then
+    "-" or a letter depending if the Xtal is a base or a
     salt (the letter corresponding to the number of the salt)
     The 8th position is for the polymorph or the data-acquisition.
 
-    Afterwars it asks the user for the name, provinding a suggestion.
+    Afterwards it asks the user for the name, provinding a suggestion.
 
     @param infile: name of the CIF file
     @type infile: string
@@ -2043,7 +2342,8 @@ def renamefile(infile, namelist):
     if infile[:2].upper().find("SR") == 0:
         for i in infile[2:9].upper():
             if i in figures:
-                if len(ref) >= 6: continue
+                if len(ref) >= 6:
+                    continue
                 ref += i
             if i in letters:
                 sel += i
@@ -2053,7 +2353,8 @@ def renamefile(infile, namelist):
     elif infile[:3].upper().find("SSR") == 0:
         for i in infile[3:10].upper():
             if i in figures:
-                if len(ref) >= 6: continue
+                if len(ref) >= 6:
+                    continue
                 ref += i
             if i in letters:
                 sel += i
@@ -2063,12 +2364,14 @@ def renamefile(infile, namelist):
     elif infile[:2].upper().find("SL") == 0:
         if len(infile) > 12:
             try:
-                if float(infile[10:12]) > 0: sel = "A"
-            except:
+                if float(infile[10:12]) > 0:
+                    sel = "A"
+            except Exception:
                 sel = ""
         for i in infile[2:9].upper():
             if i in figures:
-                if len(ref) >= 6: continue
+                if len(ref) >= 6:
+                    continue
                 ref += i
             if i in letters:
                 sel += i
@@ -2076,24 +2379,30 @@ def renamefile(infile, namelist):
     elif (infile[7] in figures) and (infile[6].upper() in letters + ["-"]):
         a = 0
         for i in infile[:6].upper():
-            if i in figures: a += 1
-        if a > 5: return infile
+            if i in figures:
+                a += 1
+        if a > 5:
+            return infile
     else:
         ref = infile[:6]
         sel = ""
 
     while len(ref) < 6:
         ref = "0" + ref
-    if sel == "": sel = "-"
+    if sel == "":
+        sel = "-"
     name = ref + sel
     count = 1
     for i in namelist:
-        if i.find(name) == 0: count += 1
+        if i.find(name) == 0:
+            count += 1
     name += str(count)
 
-    print("I suggest using %s as reference for the database for file %s" % (name, infile))
+    print("I suggest using %s as reference for the database for file %s" %
+          (name, infile))
     while True:
-        txt = eval(input(" Database reference (<= 8 characters) [%s]-->" % name))
+        txt = eval(input(" Database reference (<= 8 characters) [%s]-->" %
+                         name))
         if len(txt) == 0:
             break
         if len(txt) <= 8:
@@ -2103,7 +2412,8 @@ def renamefile(infile, namelist):
         count = 1
         name = name[:-1]
         for i in namelist:
-            if i.find(name) == 0: count += 1
+            if i.find(name) == 0:
+                count += 1
         name += str(count)
         print("using " + name)
 
@@ -2121,11 +2431,13 @@ def MergeSg(name, kcd, sg):
     @return: a new cif-object
     @rtype: dictionary
     """
-    DoNotMerge = ["loop_", "_chemical_formula_weight", "_chemical_formula_moiety", "_chemical_formula_sum"]
+    do_not_merge = ["loop_", "_chemical_formula_weight",
+                    "_chemical_formula_moiety", "_chemical_formula_sum"]
     if not exists(kcd, "_chemical_name_common"):
         kcd["_chemical_name_common"] = name
     for i in sg:
-        if i in DoNotMerge: continue
+        if i in do_not_merge:
+            continue
         if not exists(kcd, i):
             kcd[i] = sg[i]
     w, cif = CheckSym(kcd, True)
@@ -2153,17 +2465,21 @@ if __name__ == '__main__':
         print("Checking for the data needed to enter them to the Database")
 
         m_cif, m_mod = CheckForCSD(m_cif_2, name=in_cif_file_path)
-        if not m_mod: print("OK")
+        if not m_mod:
+            print("OK")
         if m_mod or len(m_warning) > 0:
-            out_cif_file_path = eval(input("Please enter the name of the file where to save the CIF data -->"))
+            out_cif_file_path = eval(input(('Please enter the name of the file'
+                                            ' where to save the CIF data -->')))
             if len(out_cif_file_path) > 0:
-                if out_cif_file_path[-4:].lower() != ".cif": out_cif_file_path += ".cif"
+                if out_cif_file_path[-4:].lower() != ".cif":
+                    out_cif_file_path += ".cif"
                 SaveCIF(m_cif, out_cif_file_path)
     elif sys.argv[0].lower().split("/")[-1] == "checkall2csd":
         in_cif_file_paths = []
         m_table = {}
         for m_i in os.listdir("."):
-            if m_i[-4:].lower() == ".cif": in_cif_file_paths.append(m_i)
+            if m_i[-4:].lower() == ".cif":
+                in_cif_file_paths.append(m_i)
         in_cif_file_paths.sort()
         if os.path.isfile("ConversionTable"):
             print("Loading the Conversion Table")
@@ -2182,11 +2498,13 @@ if __name__ == '__main__':
             if in_cif_file_path in m_table:
                 out_cif_file_path = m_table[in_cif_file_path]
             else:
-                out_cif_file_path = renamefile(in_cif_file_path, list(m_table.values()))
+                out_cif_file_path = renamefile(in_cif_file_path,
+                                               list(m_table.values()))
                 m_table[in_cif_file_path] = out_cif_file_path
             if os.path.isfile(os.path.join("./process", out_cif_file_path)):
-                print("The destination file exists", os.path.join("./process", out_cif_file_path))
-                print("###########################################################")
+                print("The destination file exists",
+                      os.path.join("./process", out_cif_file_path))
+                print(60*'#')
                 continue
             m_cif = LoadCIF(in_cif_file_path)
             m_warning, m_cif_2 = CheckSym(m_cif, True)
@@ -2194,18 +2512,21 @@ if __name__ == '__main__':
                 m_warning = "OK"
             print("Checking for symmetry : \n%s" % m_warning)
             m_cif_2["_database_code_CSD"] = out_cif_file_path[:-4]
-            #            print "Checking for the data needed to enter them to the Database"
+            #            print "Checking for the data needed
+            #             to enter them to the Database"
             m_cif, m_mod = CheckForCSD(m_cif_2, name=in_cif_file_path)
-            if not m_mod: print("OK")
+            if not m_mod:
+                print("OK")
 
             print("Saving the Conversion Table")
             m_f = open("ConversionTable", "w")
             for m_i in m_table:
                 m_f.write("%s    %s\n" % (m_i, m_table[m_i]))
             m_f.close()
-            print("###########################################################")
+            print(60*'#')
 
-            if out_cif_file_path[-4:].lower() != ".cif": out_cif_file_path += ".cif"
+            if out_cif_file_path[-4:].lower() != ".cif":
+                out_cif_file_path += ".cif"
             SaveCIF(m_cif, "process/" + out_cif_file_path)
     elif sys.argv[0].lower().split("/")[-1] == "report":
         if len(sys.argv) == 2:
@@ -2226,13 +2547,15 @@ if __name__ == '__main__':
         cif3 = merge_platon(m_cif_2, platon(in_cif_file_path))
         print("Checking for the data needed to generate a report")
         m_cif, m_mod = CheckForRST(cif3)
-        if not m_mod: print("OK")
+        if not m_mod:
+            print("OK")
         WriteReport(in_cif_file_path, m_cif, Lang="En")
     elif sys.argv[0].lower().split("/")[-1] == "fixallsym":
         print("Doing a trivial rewrite with symmetry check")
         in_cif_file_paths = []
         for m_i in os.listdir("."):
-            if m_i[-4:].lower() == ".cif": in_cif_file_paths.append(m_i)
+            if m_i[-4:].lower() == ".cif":
+                in_cif_file_paths.append(m_i)
         in_cif_file_paths.sort()
         print("Processing all the files : ", in_cif_file_paths)
         for in_cif_file_path in in_cif_file_paths:
@@ -2249,13 +2572,16 @@ if __name__ == '__main__':
             out_cif_file_path = sys.argv[2]
         else:
             raise Exception("Please enter the name of CIF file to process")
-        #        print "Doing a trivial rewrite with symmetry check on file : %s to %s"%(filename,outfile)
+        #        print "Doing a trivial rewrite with
+        #         symmetry check on file : %s to %s"%(filename,outfile)
         #        cif=LoadCIF(filename)
         m_cif = LoadCIF(in_cif_file_path)
         m_warning, m_cif_2 = CheckSym(m_cif, True)
         if len(m_warning) == 0:
             m_warning = "OK"
-        print("Checking for symmetry : %s ... %s -> %s" % (m_warning, in_cif_file_path, out_cif_file_path))
+        print("Checking for symmetry : %s ... %s -> %s" % (
+            m_warning, in_cif_file_path, out_cif_file_path
+        ))
         SaveCIF(m_cif, out_cif_file_path)
 
     else:

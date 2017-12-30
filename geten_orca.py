@@ -22,28 +22,35 @@ if __name__ == '__main__':
     from optparse import OptionParser
 
     usage = "%prog [-h|--help] [-b|--bsse]  <name>"
-    description = '''Script to get interaction energies rom ORCA output files. Reads <name>.symm and output files, writes <name>.ene'''
+    description = (
+        'Script to get interaction energies rom ORCA output files.'
+        ' Reads <name>.symm and output files, writes <name>.ene'
+    )
 
     parser = OptionParser(usage=usage, description=description)
 
     # parser.add_option
-    parser.add_option('-b', '--bsse', action="store_true", dest='bsse',
-                      help='Flag to create input files for BSSE correction.', default=False)
+    parser.add_option('-b', '--bsse',
+                      action="store_true",
+                      dest='bsse',
+                      help='Flag to create input files for BSSE correction.',
+                      default=False)
 
     (options, args) = parser.parse_args()
 
     # arg checks
     if not len(args) == 1:
-        parser.error('Single argument <name> required.\nGet more help with -h option.')
+        parser.error(
+            'Single argument <name> required.\nGet more help with -h option.'
+        )
     name = args[0]
 
     # read .symm file
     symm = list()
     with open("%s.symm" % name) as symm_file:
         for line in symm_file:
-            if not line.split() >= 3:
+            if not len(line.split()) >= 3:
                 break
-
             symm.append(line.split())
 
     # read energies

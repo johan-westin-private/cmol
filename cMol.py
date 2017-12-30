@@ -15,7 +15,8 @@ def get_symops(cifname):
     symops = list()
     cif = parsecif(readcif(cifname))
     for l in cif['loop_']:
-        for t in '_space_group_symop_operation_xyz', '_symmetry_equiv_pos_as_xyz':
+        for t in ['_space_group_symop_operation_xyz',
+                  '_symmetry_equiv_pos_as_xyz']:
             if t in l[0]:
                 for s in l[1]:
                     symops.append(SymOp(s[t]))
@@ -35,7 +36,8 @@ def read_cmol(basename):
         ((0,1),)
         '''
         with open(basename + '.map', 'rt') as map_file:
-            separate_args = [eval(l.rstrip().rstrip()) for l in map_file.readlines() if l]
+            separate_args = [eval(l.rstrip().rstrip()) for l in
+                             map_file.readlines() if l]
     else:
         separate_args = ()
     symops = get_symops(basename + '.cif')
@@ -57,16 +59,19 @@ class SymOp:
         self.add_trans(t)
 
     def __eq__(self, other):
-        assert type(other) == type(self), '%s is not %s !' % (type(other), type(self))
-        return self.R.DescibeAsString() == other.R.DescibeAsString() and \
-               self.T.IsApprox(other.T, 0.01)
+        assert type(other) == type(self), '%s is not %s !' \
+                                          % (type(other), type(self))
+        return self.R.DescibeAsString() == other.R.DescibeAsString() \
+            and self.T.IsApprox(other.T, 0.01)
 
     def __repr__(self):
         # describe as 4x4 matrix
         v = [float(i) for i in self.R.DescribeAsValues().split()]
         # construct representation of symmetry operation without translations
-        s = ob.transform3d(ob.vector3(v[0], v[1], v[2]), ob.vector3(v[4], v[5], v[6]),
-                           ob.vector3(v[8], v[9], v[10]), ob.vector3(0)).DescribeAsString().split(',')
+        s = ob.transform3d(ob.vector3(v[0], v[1], v[2]),
+                           ob.vector3(v[4], v[5], v[6]),
+                           ob.vector3(v[8], v[9], v[10]),
+                           ob.vector3(0)).DescribeAsString().split(',')
         # add translational part from 4x4 matrix to true translation from
         # symmetry operation
         t = [v[3] + self.T.GetX(), v[7] + self.T.GetY(), v[11] + self.T.GetZ()]
@@ -84,7 +89,9 @@ class SymOp:
     # noinspection PyUnusedLocal
     def set_from_str(self, s):
         assert isinstance(s, str), 's is not string: %s' % s
-        assert 'x' in s and 'y' in s and 'z' in s, 's should contain x,y,z: %s' % s
+        assert 'x' in s \
+               and 'y' in s \
+               and 'z' in s, 's should contain x,y,z: %s'.format(s)
         (x, y, z) = (0, 0, 0)
         s0 = eval(s)
         vt2 = [int(i) for i in s0]
@@ -168,15 +175,21 @@ class cMol(object):
         c = self.center_f
         vc = list()
         for i in (c.GetX(), c.GetY(), c.GetZ()):
-            if i < 0: i -= 1
+            if i < 0:
+                i -= 1
             vc.append(int(i))
         t = ob.vector3(vc[0], vc[1], vc[2])
         if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
-            print("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2]))
+            print("WARNING: moving by [ %4.1f %4.1f %4.1f ]" %
+                  (vc[0], vc[1], vc[2]))
             tc = self.f2c(t)
             for i in range(self.OBMol.NumAtoms()):
                 atom = self.OBMol.GetAtom(i + 1)
-                v = ob.vector3(atom.GetX(), atom.GetY(), atom.GetZ())  # wtf! GetVector fails with segfault
+                v = ob.vector3(
+                    atom.GetX(),
+                    atom.GetY(),
+                    atom.GetZ()
+                )  # wtf! GetVector fails with segfault
                 v -= tc
                 atom.SetVector(v)
 
@@ -189,8 +202,10 @@ class cMol(object):
         for bond in ob.OBMolBondIter(self.OBMol):
             atoms = (bond.GetBeginAtom(), bond.GetEndAtom())
             anums = (atoms[0].GetAtomicNum(), atoms[1].GetAtomicNum())
-            if anums[0] == 1: bond.SetLength(atoms[1], _bond_data[anums[1]])
-            if anums[1] == 1: bond.SetLength(atoms[0], _bond_data[anums[0]])
+            if anums[0] == 1:
+                bond.SetLength(atoms[1], _bond_data[anums[1]])
+            if anums[1] == 1:
+                bond.SetLength(atoms[0], _bond_data[anums[0]])
 
     def set_mon_map(self, mons=None):
         if mons is None:
@@ -208,15 +223,15 @@ class cMol(object):
     def separate(self, args):
         try:
             mode = args[0]
-        except:
+        except Exception:
             mode = 1
         try:
             symops = args[1]
-        except:
+        except Exception:
             symops = list()
         try:
             molmap = args[2]
-        except:
+        except Exception:
             molmap = list()
 
         if mode == 0:
@@ -259,29 +274,34 @@ class cMol(object):
 
     def iter_close(self, molid=0, vdwinc=1.0):
         s0 = ob.vector3()
-        for i in self.mol_map[molid]: s0 += self.vf[i]
+        for i in self.mol_map[molid]:
+            s0 += self.vf[i]
         slist = list()
         slist.append(s0)
         for s in self.iter_symop_t2():
             _found = []
-            I = s.is_identity()
+            is_identity = s.is_identity()
             for a0idx in self.mol_map[molid]:
                 for molid1 in range(len(self.mol_map)):
-                    if molid1 in _found: continue
-                    if I and molid == molid1: continue
+                    if molid1 in _found:
+                        continue
+                    if is_identity and molid == molid1:
+                        continue
                     for a1idx in self.mol_map[molid1]:
                         vt = self.f2c(s.apply(self.vf[a1idx]))
                         svdw2 = self.vdw[a0idx] + self.vdw[a1idx] + vdwinc
                         svdw2 *= svdw2
                         if self.vc[a0idx].distSq(vt) < svdw2:
                             s1 = ob.vector3(0, 0, 0)
-                            for i in self.mol_map[molid1]: s1 += s.apply(self.vf[i])
+                            for i in self.mol_map[molid1]:
+                                s1 += s.apply(self.vf[i])
                             _found1 = False
                             for i in slist:
                                 if i.distSq(s1) < 0.001:
                                     _found1 = True
                                     break
-                            if _found1: break
+                            if _found1:
+                                break
                             _found.append(molid1)
                             slist.append(s1)
                             yield s, molid1

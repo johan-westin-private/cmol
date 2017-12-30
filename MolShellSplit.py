@@ -53,19 +53,29 @@ if __name__ == '__main__':
     from optparse import OptionParser
 
     usage = "%prog [-h|--help] [-w|--wdvinc 1.0]  <name>"
-    description = "Script for constructions of molecular shells from CIF. Reads files <name>.cif. Writes symm and xyz files."
+    description = (
+        'Script for constructions of molecular shells from CIF.'
+        ' Reads files <name>.cif. Writes symm and xyz files.'
+    )
 
     parser = OptionParser(usage=usage, description=description)
 
     # parser.add_option
-    parser.add_option('-w', '--wdvinc', dest='wdvinc',
-                      help='Find molecules with close contact of WdV radii sum + vdwinc', type='float')
+    parser.add_option('-w', '--wdvinc',
+                      dest='wdvinc',
+                      help=(
+                          'Find molecules with close contact of WdV '
+                          'radii sum + vdwinc'
+                      ),
+                      type='float')
 
     (m_options, m_args) = parser.parse_args()
 
     # arg checks
     if not len(m_args) == 1:
-        parser.error('Single argument <name> required.\nGet more help with -h option.')
+        parser.error(
+            'Single argument <name> required.\nGet more help with -h option.'
+        )
 
     # go..
     main(m_options, m_args)

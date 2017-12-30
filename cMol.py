@@ -9,9 +9,18 @@ import openbabel as ob
 import pybel
 
 from libcif import parsecif, readcif
+from openbabel import OBAtom
+from typing import List
+from openbabel import OBMol
+from openbabel import OBUnitCell
+from typing import Any
+from typing import Tuple
+from openbabel import vector3
+from typing import Iterator
 
 
 def get_symops(cifname):
+    # type: (str) -> List[Any]
     symops = list()
     cif = parsecif(readcif(cifname))
     for l in cif['loop_']:
@@ -25,6 +34,7 @@ def get_symops(cifname):
 
 
 def read_cmol(basename):
+    # type: (str) -> cMol
     if not os.path.isfile(basename + '.cif'):
         sys.stderr.write('No CIF to work with!\n')
         return None
@@ -130,6 +140,7 @@ class SymOp:
 
 class cMol(object):
     def __init__(self, OBMol, unitcell, symops=list(), separate_args=(1,)):
+        # type: (OBMol, OBUnitCell, List[Any], Tuple[()]) -> None
         self.OBMol = OBMol
         self.unitcell = unitcell
         self.f2c = self.unitcell.FractionalToCartesian
@@ -147,6 +158,7 @@ class cMol(object):
         self.vdw = [obet.GetVdwRad(a.GetAtomicNum()) for a in self.atoms]
 
     def iter_trans2(self):
+        # type: () -> Iterator[vector3]
         d = (0, 1, -1, 2, -2, 3, -3)
         for i in d:
             for j in d:
@@ -154,6 +166,7 @@ class cMol(object):
                     yield ob.vector3(i, j, k)
 
     def iter_symop_t2(self):
+        # type: () -> Iterator[Any]
         for s in self.symops:
             for t in self.iter_trans2():
                 yield SymOp(s.R, t)
@@ -195,9 +208,11 @@ class cMol(object):
 
     @property
     def atoms(self):
+        # type: () -> List[OBAtom]
         return [self.OBMol.GetAtom(i + 1) for i in range(self.OBMol.NumAtoms())]
 
     def norm_h(self):
+        # type: () -> None
         _bond_data = {6: 1.089, 7: 1.015, 8: 0.993}
         for bond in ob.OBMolBondIter(self.OBMol):
             atoms = (bond.GetBeginAtom(), bond.GetEndAtom())
@@ -207,7 +222,10 @@ class cMol(object):
             if anums[1] == 1:
                 bond.SetLength(atoms[0], _bond_data[anums[0]])
 
-    def set_mon_map(self, mons=None):
+    def set_mon_map(self,
+                    mons=None  # type: Tuple[OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol]
+                    ):
+        # type: (...) -> None
         if mons is None:
             mons = []
         self.mol_map = [list() for i in mons]
@@ -221,6 +239,7 @@ class cMol(object):
                         continue
 
     def separate(self, args):
+        # type: (Tuple[()]) -> None
         try:
             mode = args[0]
         except Exception:
@@ -273,6 +292,7 @@ class cMol(object):
             yield vs, symop
 
     def iter_close(self, molid=0, vdwinc=1.0):
+        # type: (int, float) -> Iterator[Tuple[Any, int]]
         s0 = ob.vector3()
         for i in self.mol_map[molid]:
             s0 += self.vf[i]

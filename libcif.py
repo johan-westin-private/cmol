@@ -214,6 +214,18 @@ for m_i in ["\"", "\'"]:
         EndComment.append(m_i + m_j)
 
 
+def _old_div(a, b):
+    """
+    Equivalent to ``a / b`` on Python 2 without ``from __future__ import division``.
+    TODO: generalize this to other objects (like arrays etc.)
+    """
+    import numbers
+    if isinstance(a, numbers.Integral) and isinstance(b, numbers.Integral):
+        return a // b
+    else:
+        return a / b
+
+
 def LoadCIF(filename):
     """Load the CIF file and returns the dictionary
     @param filename: the name of the file to open
@@ -311,7 +323,7 @@ def oneloop(fields, start):
         loop.append(element)
 
     else:
-        for i in range(len(data) / len(keys)):
+        for i in range(_old_div(len(data), len(keys))):
             element = {}
             for j in keys:
                 element[j] = data[k]
@@ -1851,7 +1863,7 @@ def encode_entity(text, pattern=_escape):
 del _escape
 
 
-def escape_cdata(s, encoding=None, replace=string.replace):
+def escape_cdata(s, encoding=None, replace=str.replace):
     s = replace(s, "&", "&amp;")
     s = replace(s, "<", "&lt;")
     s = replace(s, ">", "&gt;")
@@ -1863,7 +1875,7 @@ def escape_cdata(s, encoding=None, replace=string.replace):
     return s
 
 
-def escape_attrib(s, encoding=None, replace=string.replace):
+def escape_attrib(s, encoding=None, replace=str.replace):
     s = replace(s, "&", "&amp;")
     s = replace(s, "'", "&apos;")
     s = replace(s, "\"", "&quot;")

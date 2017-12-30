@@ -17,6 +17,8 @@ from typing import Any
 from typing import Tuple
 from openbabel import vector3
 from typing import Iterator
+from openbabel import transform3d
+from typing import Union
 
 
 def get_symops(cifname):
@@ -61,6 +63,7 @@ def printvec(v):
 
 class SymOp:
     def __init__(self, r=ob.transform3d(1), t=ob.vector3(0, 0, 0)):
+        # type: (Union[transform3d, str], vector3) -> None
         self.T = ob.vector3(0, 0, 0)
         if isinstance(r, ob.transform3d):
             self.R = r
@@ -75,6 +78,7 @@ class SymOp:
             and self.T.IsApprox(other.T, 0.01)
 
     def __repr__(self):
+        # type: () -> str
         # describe as 4x4 matrix
         v = [float(i) for i in self.R.DescribeAsValues().split()]
         # construct representation of symmetry operation without translations
@@ -98,6 +102,7 @@ class SymOp:
 
     # noinspection PyUnusedLocal
     def set_from_str(self, s):
+        # type: (str) -> None
         assert isinstance(s, str), 's is not string: %s' % s
         assert 'x' in s \
                and 'y' in s \
@@ -120,6 +125,7 @@ class SymOp:
         # assert str(self) == s.replace(' ','',99)
 
     def is_identity(self):
+        # type: () -> bool
         v0 = ob.vector3(.1, .2, .3)
         v = self.apply(v0)
         if v.IsApprox(v0, 0.01):
@@ -127,12 +133,14 @@ class SymOp:
         return False
 
     def add_trans(self, t):
+        # type: (vector3) -> None
         self.T += t
 
     def set_trans(self, t):
         self.T = t
 
     def apply(self, v):
+        # type: (vector3) -> vector3
         res = self.R * v
         res += self.T
         return res

@@ -50,10 +50,10 @@ def printvec(v):
 class SymOp:
     def __init__(self, r=ob.transform3d(1), t=ob.vector3(0, 0, 0)):
         self.T = ob.vector3(0, 0, 0)
-        if type(r) is bytes:
-            self.set_from_str(r)
-        else:
+        if isinstance(r, ob.transform3d):
             self.R = r
+        else:
+            self.set_from_str(str(r))
         self.add_trans(t)
 
     def __eq__(self, other):
@@ -83,7 +83,7 @@ class SymOp:
 
     # noinspection PyUnusedLocal
     def set_from_str(self, s):
-        assert type(s) is bytes, 's is not string: %s' % s
+        assert isinstance(s, str), 's is not string: %s' % s
         assert 'x' in s and 'y' in s and 'z' in s, 's should contain x,y,z: %s' % s
         (x, y, z) = (0, 0, 0)
         s0 = eval(s)

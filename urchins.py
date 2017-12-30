@@ -106,11 +106,13 @@ def make_evd_struct(cmol, centers, vectors, symm, evd=True, mol=True):
 
 def writepdb(mol, filename):
     obconversion = ob.OBConversion()
+    # noinspection PyUnusedLocal
     formatok = obconversion.SetOutFormat('pdb')
     obconversion.WriteFile(mol, filename)
     obconversion.CloseOutFile()
 
 
+# noinspection PyUnusedLocal
 def main(options, args):
     basename = args[0]
     symm = read_symm(basename + '.symm')
@@ -142,16 +144,16 @@ if __name__ == '__main__':
 
     parser = OptionParser(usage=usage, description=description)
 
-    (options, args) = parser.parse_args()
+    (m_options, m_args) = parser.parse_args()
 
     # arg checks
-    if not len(args) == 1:
+    if not len(m_args) == 1:
         parser.error('Single argument <name> required.\nGet more help with -h option.')
 
     for ext in ('cif', 'symm', 'ene'):
-        f = args[0] + '.' + ext
-        if not os.path.isfile(f):
-            parser.error('File not found: %s' % f)
+        m_f = m_args[0] + '.' + ext
+        if not os.path.isfile(m_f):
+            parser.error('File not found: %s' % m_f)
 
     # go..
-    main(options, args)
+    main(m_options, m_args)

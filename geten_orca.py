@@ -3,16 +3,15 @@
 import os
 
 
-def get_sp_en_orca(fil):
-    if not os.path.isfile(fil):
-        raise IOError("Could not open file %s" % fil)
-    f = file(fil)
-    with open(fil) as f:
+def get_sp_en_orca(file_path):
+    if not os.path.isfile(file_path):
+        raise IOError("Could not open file %s" % file_path)
+    with open(file_path) as f:
         for l in f:
             if l.startswith('FINAL SINGLE POINT ENERGY'):
                 s = l.split()
                 return float(s[4])
-    raise IOError('Failed to read energy from file %s' % fil)
+    raise IOError('Failed to read energy from file %s' % file_path)
 
 
 def main():
@@ -40,8 +39,8 @@ if __name__ == '__main__':
 
     # read .symm file
     symm = list()
-    with open("%s.symm" % name) as f:
-        for line in f:
+    with open("%s.symm" % name) as symm_file:
+        for line in symm_file:
             if not line.split() >= 3:
                 break
 

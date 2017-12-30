@@ -5,6 +5,7 @@ import sys
 from cMol import *
 
 
+# noinspection PyUnusedLocal
 def main(options, args):
     basename = args[0]
 
@@ -20,7 +21,7 @@ def main(options, args):
     conv.SetOutFormat('xyz')
 
     with open(basename + '.symm', 'w') as symm:
-        id = 0
+        identity = 0
         for id0 in range(len(cmol.mol_map)):
             m0 = ob.OBMol()
             for i in cmol.mol_map[id0]:
@@ -30,7 +31,7 @@ def main(options, args):
             convm.CloseOutFile()
             for s, id1 in cmol.iter_close(id0):
                 symm.write('%s %s %s\n' % (s, id0, id1))
-                id += 1
+                identity += 1
                 m1 = ob.OBMol()
                 atoms1 = [cmol.atoms[i] for i in cmol.mol_map[id1]]
                 for a in atoms1:
@@ -38,7 +39,7 @@ def main(options, args):
                     na.SetVector(cmol.f2c(s.apply(cmol.c2f(a.GetVector()))))
                     na.SetAtomicNum(a.GetAtomicNum())
                     m1.AddAtom(na)
-                conv.WriteFile(m0, '%s-d%03i.xyz' % (basename, id))
+                conv.WriteFile(m0, '%s-d%03i.xyz' % (basename, identity))
                 conv.Write(m1)
                 conv.CloseOutFile()
                 ms.append(m1)
@@ -60,11 +61,11 @@ if __name__ == '__main__':
     parser.add_option('-w', '--wdvinc', dest='wdvinc',
                       help='Find molecules with close contact of WdV radii sum + vdwinc', type='float')
 
-    (options, args) = parser.parse_args()
+    (m_options, m_args) = parser.parse_args()
 
     # arg checks
-    if not len(args) == 1:
+    if not len(m_args) == 1:
         parser.error('Single argument <name> required.\nGet more help with -h option.')
 
     # go..
-    main(options, args)
+    main(m_options, m_args)

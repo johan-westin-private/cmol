@@ -34,7 +34,8 @@ def read_cmol(basename):
         (SymOp('1/2-x,1-y,1/2+z'),)
         ((0,1),)
         '''
-        separate_args = [eval(l.rstrip().rstrip()) for l in file(basename + '.map').readlines() if l]
+        with open(basename + '.map', 'rt') as map_file:
+            separate_args = [eval(l.rstrip().rstrip()) for l in map_file.readlines() if l]
     else:
         separate_args = ()
     symops = get_symops(basename + '.cif')
@@ -49,10 +50,10 @@ def printvec(v):
 class SymOp:
     def __init__(self, r=ob.transform3d(1), t=ob.vector3(0, 0, 0)):
         self.T = ob.vector3(0, 0, 0)
-        if type(r) is bytes:
-            self.set_from_str(r)
-        else:
+        if isinstance(r, ob.transform3d):
             self.R = r
+        else:
+            self.set_from_str(str(r))
         self.add_trans(t)
 
     def __eq__(self, other):
@@ -80,8 +81,9 @@ class SymOp:
                 t[i] = t[i][1:]
         return ','.join(t)
 
+    # noinspection PyUnusedLocal
     def set_from_str(self, s):
-        assert type(s) is bytes, 's is not string: %s' % s
+        assert isinstance(s, str), 's is not string: %s' % s
         assert 'x' in s and 'y' in s and 'z' in s, 's should contain x,y,z: %s' % s
         (x, y, z) = (0, 0, 0)
         s0 = eval(s)
@@ -125,6 +127,7 @@ class cMol(object):
         self.unitcell = unitcell
         self.f2c = self.unitcell.FractionalToCartesian
         self.c2f = self.unitcell.CartesianToFractional
+        self.mol_map = []
         self.symops = symops
 
         self.norm_h()
@@ -169,7 +172,7 @@ class cMol(object):
             vc.append(int(i))
         t = ob.vector3(vc[0], vc[1], vc[2])
         if not t.IsApprox(ob.vector3(0, 0, 0), 0.001):
-            print(("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2])))
+            print("WARNING: moving by [ %4.1f %4.1f %4.1f ]" % (vc[0], vc[1], vc[2]))
             tc = self.f2c(t)
             for i in range(self.OBMol.NumAtoms()):
                 atom = self.OBMol.GetAtom(i + 1)
@@ -189,7 +192,9 @@ class cMol(object):
             if anums[0] == 1: bond.SetLength(atoms[1], _bond_data[anums[1]])
             if anums[1] == 1: bond.SetLength(atoms[0], _bond_data[anums[0]])
 
-    def set_mon_map(self, mons=[]):
+    def set_mon_map(self, mons=None):
+        if mons is None:
+            mons = []
         self.mol_map = [list() for i in mons]
         for mon in mons:
             for i in range(mon.NumAtoms()):

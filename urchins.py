@@ -15,12 +15,15 @@ def read_symm(fil):
     symm = list()
     for i in p:
         ii = i.split()
-        assert len(ii) >= 3, 'Each line of symm file should contain three records separated by spaces.'
+        assert len(ii) >= 3, (
+            'Each line of symm file should contain three'
+            ' records separated by spaces.'
+        )
         ii[0] = SymOp(ii[0])
         try:
             ii[1] = int(ii[1])
             ii[2] = int(ii[2])
-        except:
+        except Exception:
             raise ValueError("Failed to parse line in symm file:\n%s\n" % i)
         symm.append(ii)
     return symm
@@ -34,7 +37,7 @@ def read_ene(fil):
     for i in p:
         try:
             i = float(i)
-        except:
+        except Exception:
             raise ValueError("Failed to parse line in ene file:\n%s\n" % i)
         # ignore zero and positive values, just replace with small negative
         if i >= 0:
@@ -45,18 +48,20 @@ def read_ene(fil):
 
 def calc_center(vecs):
     center = pybel.ob.vector3(0, 0, 0)
-    l = 0
+    idx = 0
     for v in vecs:
         center += v
-        l += 1
-    center /= l
+        idx += 1
+    center /= idx
     return center
 
 
 def get_evd_centers(cmol):
     centers = list()
     for m in cmol.mol_map:
-        centers.append(calc_center([cmol.c2f(cmol.atoms[a].GetVector()) for a in m]))
+        centers.append(
+            calc_center([cmol.c2f(cmol.atoms[a].GetVector()) for a in m])
+        )
     return centers
 
 
@@ -117,7 +122,9 @@ def main(options, args):
     basename = args[0]
     symm = read_symm(basename + '.symm')
     ene = read_ene(basename + '.ene')
-    assert len(symm) == len(ene), "Different number of records in symm and ene files!"
+    assert len(symm) == len(ene), (
+        'Different number of records in symm and ene files!'
+    )
     cmol = read_cmol(basename)
 
     centers = get_evd_centers(cmol)
@@ -140,7 +147,10 @@ if __name__ == '__main__':
     from optparse import OptionParser
 
     usage = "%prog [-h|--help] <name>"
-    description = "Script for constructions of EVD. Reads files <name>.cif, <name>.symm and <name>.ene. Writes PDB files."
+    description = (
+        'Script for constructions of EVD.'
+        ' Reads files <name>.cif, <name>.symm and <name>.ene. Writes PDB files.'
+    )
 
     parser = OptionParser(usage=usage, description=description)
 
@@ -148,7 +158,9 @@ if __name__ == '__main__':
 
     # arg checks
     if not len(m_args) == 1:
-        parser.error('Single argument <name> required.\nGet more help with -h option.')
+        parser.error(
+            'Single argument <name> required.\nGet more help with -h option.'
+        )
 
     for ext in ('cif', 'symm', 'ene'):
         m_f = m_args[0] + '.' + ext

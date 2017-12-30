@@ -3,10 +3,13 @@
 import sys
 
 from cMol import *
+from typing import Any
+from typing import List
 
 
 # noinspection PyUnusedLocal
 def main(options, args):
+    # type: (Any, List[str]) -> None
     basename = args[0]
 
     cmol = read_cmol(basename)
@@ -50,6 +53,7 @@ def main(options, args):
 
 
 if __name__ == '__main__':
+
     from optparse import OptionParser
 
     usage = "%prog [-h|--help] [-w|--wdvinc 1.0]  <name>"

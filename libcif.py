@@ -15,6 +15,9 @@ import os.path
 import re
 import sys
 import time
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 # at  the moment, the symmetries are not yet complete.
 # please send me the modifications by Email
@@ -227,6 +230,7 @@ for m_i in ["\"", "\'"]:
 
 
 def _old_div(a, b):
+    # type: (int, int) -> int
     """
     Equivalent to ``a / b`` on Python 2
     without ``from __future__ import division``.
@@ -263,6 +267,7 @@ def LoadCIF(filename):
 
 
 def readcif(filename):
+    # type: (str) -> str
     """-Check if the filename exists
 
     -read the cif file
@@ -294,6 +299,7 @@ def readcif(filename):
 
 
 def oneloop(fields, start):
+    # type: (List[str], int) -> Tuple[List[Dict[str, str]], int, List[str]]
     """Processes one loop in the data extraction of the CIF file
     @param fields: list of all the words contained in the cif file
     @type fields: list
@@ -354,6 +360,7 @@ def oneloop(fields, start):
 
 
 def parsecif(text):
+    # type: (str) -> Dict[str, str]
     """
     -Parses the text of a CIF file
 
@@ -396,8 +403,8 @@ def parsecif(text):
     return cif
 
 
-# noinspection PyUnusedLocal
 def splitcif(text):
+    # type: (str) -> List[str]
     """Separate the text in fields as defined in the CIF
     @param text: the content of the CIF-file
     @type text: string

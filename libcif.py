@@ -15,9 +15,7 @@ import os.path
 import re
 import sys
 import time
-from typing import Dict
-from typing import List
-from typing import Tuple
+from typing import Any, Dict, List, Tuple
 
 # at  the moment, the symmetries are not yet complete.
 # please send me the modifications by Email
@@ -218,15 +216,15 @@ EOL = ["\r", "\n", "\r\n", "\n\r"]
 Blank = [" ", "    "] + EOL
 StartComment = ["\"", "\'"]
 
-for m_i in EOL:
-    StartComment.append((m_i + ";"))
+for i in EOL:
+    StartComment.append((i + ";"))
 
 EndComment = []
-for m_i in EOL:
-    EndComment.append(m_i + ";")
-for m_i in ["\"", "\'"]:
-    for m_j in Blank:
-        EndComment.append(m_i + m_j)
+for i in EOL:
+    EndComment.append(i + ";")
+for i in ["\"", "\'"]:
+    for j in Blank:
+        EndComment.append(i + j)
 
 
 def _old_div(a, b):
@@ -240,7 +238,7 @@ def _old_div(a, b):
     if isinstance(a, numbers.Integral) and isinstance(b, numbers.Integral):
         return a // b
     else:
-        return a / b
+        return int(a / b)
 
 
 def LoadCIF(filename):
@@ -360,7 +358,7 @@ def oneloop(fields, start):
 
 
 def parsecif(text):
-    # type: (str) -> Dict[str, str]
+    # type: (str) -> Dict[str, Any]
     """
     -Parses the text of a CIF file
 
@@ -376,9 +374,9 @@ def parsecif(text):
     @rtype: dictionary
     """
 
-    cif = {}
-    loopidx = []
-    looplen = []
+    cif = {}  # type: Dict[str, Any]
+    loopidx = []  # type: List[int]
+    looplen = []  # type: List[int]
     loop = []
     # first of all : separate the cif file in fields
     fields = splitcif(text.strip())
@@ -389,7 +387,8 @@ def parsecif(text):
     if len(loopidx) > 0:
         for i in loopidx:
             loopone, length, keys = oneloop(fields, i)
-            loop.append([keys, loopone])
+            loop_item = [keys, loopone]
+            loop.append(loop_item)
             looplen.append(length)
 
         for i in range(len(loopidx) - 1, -1, -1):
@@ -2487,10 +2486,10 @@ if __name__ == '__main__':
         in_cif_file_paths.sort()
         if os.path.isfile("ConversionTable"):
             print("Loading the Conversion Table")
-            conversion_table = []
+            conversion_table = []  # type: List[str]
             with open("ConversionTable", 'r') as conversion_table_file:
-                ct = conversion_table_file.readlines()
-            for m_i in ct:
+                conversion_table = conversion_table_file.readlines()
+            for m_i in conversion_table:
                 m_j = m_i.split(None, 1)
                 m_table[m_j[0].strip()] = m_j[1].strip()
         print("Processing all the files : ", in_cif_file_paths)

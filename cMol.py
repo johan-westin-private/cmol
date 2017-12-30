@@ -9,56 +9,10 @@ import openbabel as ob
 import pybel
 
 from libcif import parsecif, readcif
-from openbabel import OBAtom
-from typing import List
-from openbabel import OBMol
-from openbabel import OBUnitCell
-from typing import Any
-from typing import Tuple
-from openbabel import vector3
-from typing import Iterator
 from openbabel import transform3d
 from typing import Union
-
-
-def get_symops(cifname):
-    # type: (str) -> List[Any]
-    symops = list()
-    cif = parsecif(readcif(cifname))
-    for l in cif['loop_']:
-        for t in ['_space_group_symop_operation_xyz',
-                  '_symmetry_equiv_pos_as_xyz']:
-            if t in l[0]:
-                for s in l[1]:
-                    symops.append(SymOp(s[t]))
-            continue
-    return symops
-
-
-def read_cmol(basename):
-    # type: (str) -> cMol
-    if not os.path.isfile(basename + '.cif'):
-        sys.stderr.write('No CIF to work with!\n')
-        return None
-    if os.path.isfile(basename + '.map'):
-        '''
-        file should look like:
-        2
-        (SymOp('1/2-x,1-y,1/2+z'),)
-        ((0,1),)
-        '''
-        with open(basename + '.map', 'rt') as map_file:
-            separate_args = [eval(l.rstrip().rstrip()) for l in
-                             map_file.readlines() if l]
-    else:
-        separate_args = ()
-    symops = get_symops(basename + '.cif')
-    mol = next(pybel.readfile('cif', basename + '.cif'))
-    return cMol(mol.OBMol, mol.unitcell, symops, separate_args=separate_args)
-
-
-def printvec(v):
-    return str((v.GetX(), v.GetY(), v.GetZ()))
+from openbabel import OBAtom, OBMol, OBUnitCell, vector3
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 
 class SymOp:
@@ -148,12 +102,12 @@ class SymOp:
 
 class cMol(object):
     def __init__(self, OBMol, unitcell, symops=list(), separate_args=(1,)):
-        # type: (OBMol, OBUnitCell, List[Any], Tuple[()]) -> None
+        # type: (OBMol, OBUnitCell, List[SymOp], Tuple) -> None
         self.OBMol = OBMol
         self.unitcell = unitcell
         self.f2c = self.unitcell.FractionalToCartesian
         self.c2f = self.unitcell.CartesianToFractional
-        self.mol_map = []
+        self.mol_map = []  # type: List[List]
         self.symops = symops
 
         self.norm_h()
@@ -174,7 +128,7 @@ class cMol(object):
                     yield ob.vector3(i, j, k)
 
     def iter_symop_t2(self):
-        # type: () -> Iterator[Any]
+        # type: () -> Iterator[SymOp]
         for s in self.symops:
             for t in self.iter_trans2():
                 yield SymOp(s.R, t)
@@ -230,12 +184,10 @@ class cMol(object):
             if anums[1] == 1:
                 bond.SetLength(atoms[0], _bond_data[anums[0]])
 
-    def set_mon_map(self,
-                    mons=None  # type: Tuple[OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol, OBMol]
-                    ):
-        # type: (...) -> None
+    def set_mon_map(self, mons=None):
+        # type: (Optional[Tuple]) -> None
         if mons is None:
-            mons = []
+            mons = tuple()
         self.mol_map = [list() for i in mons]
         for mon in mons:
             for i in range(mon.NumAtoms()):
@@ -247,7 +199,7 @@ class cMol(object):
                         continue
 
     def separate(self, args):
-        # type: (Tuple[()]) -> None
+        # type: (Tuple) -> None
         try:
             mode = args[0]
         except Exception:
@@ -290,7 +242,7 @@ class cMol(object):
                             m.AddAtom(monsx[j].GetAtom(k + 1))
                     m.ConnectTheDots()
                     res.append(m)
-                self.set_mon_map(res)
+                self.set_mon_map(tuple(res))
             else:
                 self.set_mon_map(monsx)
 
@@ -299,29 +251,29 @@ class cMol(object):
             vs = symop.apply(v)
             yield vs, symop
 
-    def iter_close(self, molid=0, vdwinc=1.0):
-        # type: (int, float) -> Iterator[Tuple[Any, int]]
+    def iter_close(self, mol_index=0, vdwinc=1.0):
+        # type: (int, float) -> Iterator[Tuple[SymOp, int]]
         s0 = ob.vector3()
-        for i in self.mol_map[molid]:
+        for i in self.mol_map[mol_index]:
             s0 += self.vf[i]
         slist = list()
         slist.append(s0)
         for s in self.iter_symop_t2():
-            _found = []
+            _found = []  # type: List[int]
             is_identity = s.is_identity()
-            for a0idx in self.mol_map[molid]:
-                for molid1 in range(len(self.mol_map)):
-                    if molid1 in _found:
+            for a0idx in self.mol_map[mol_index]:
+                for mol_index_1 in range(len(self.mol_map)):
+                    if mol_index_1 in _found:
                         continue
-                    if is_identity and molid == molid1:
+                    if is_identity and mol_index == mol_index_1:
                         continue
-                    for a1idx in self.mol_map[molid1]:
+                    for a1idx in self.mol_map[mol_index_1]:
                         vt = self.f2c(s.apply(self.vf[a1idx]))
                         svdw2 = self.vdw[a0idx] + self.vdw[a1idx] + vdwinc
                         svdw2 *= svdw2
                         if self.vc[a0idx].distSq(vt) < svdw2:
                             s1 = ob.vector3(0, 0, 0)
-                            for i in self.mol_map[molid1]:
+                            for i in self.mol_map[mol_index_1]:
                                 s1 += s.apply(self.vf[i])
                             _found1 = False
                             for i in slist:
@@ -330,7 +282,52 @@ class cMol(object):
                                     break
                             if _found1:
                                 break
-                            _found.append(molid1)
+                            _found.append(mol_index_1)
                             slist.append(s1)
-                            yield s, molid1
+                            yield s, mol_index_1
                             break
+
+
+def get_symops(cifname):
+    # type: (str) -> List[SymOp]
+    symops = list()
+    cif = parsecif(readcif(cifname))
+    l = ''  # type: Union[List[Union[List[str], List[Dict[str, str]]]], str]
+    for l in cif['loop_']:
+        for t in ['_space_group_symop_operation_xyz',
+                  '_symmetry_equiv_pos_as_xyz']:
+            if t in l[0]:
+                for s in l[1]:
+                    symop = SymOp(s[t])
+                    symops.append(symop)
+            continue
+    return symops
+
+
+def read_cmol(basename):
+    # type: (str) -> cMol
+    if not os.path.isfile(basename + '.cif'):
+        sys.stderr.write('No CIF to work with!\n')
+        return None
+    if os.path.isfile(basename + '.map'):
+        '''
+        file should look like:
+        2
+        (SymOp('1/2-x,1-y,1/2+z'),)
+        ((0,1),)
+        '''
+        with open(basename + '.map', 'rt') as map_file:
+            separate_args = [eval(l.rstrip().rstrip()) for l in
+                             map_file.readlines() if l]
+    else:
+        separate_args = []
+    symops = get_symops(basename + '.cif')
+    mol = next(pybel.readfile('cif', basename + '.cif'))
+    return cMol(mol.OBMol, mol.unitcell,
+                symops, separate_args=tuple(separate_args))
+
+
+def printvec(v):
+    return str((v.GetX(), v.GetY(), v.GetZ()))
+
+
